@@ -21,13 +21,13 @@ public class MaterialSwitch extends CompoundButton {
 
     public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
 
-    private static final float TRACK_WIDTH_DP = 56.0f;
+    private static final float TRACK_WIDTH_DP = 54.0f;
     private static final float TRACK_HEIGHT_DP = 32.0f;
     private static final float TRACK_OUTLINE_DP = 2.0f;
     private static final float HANDLE_CHECKED_DP = 24.0f;
     private static final float HANDLE_UNCHECKED_DP = 16.0f;
     private static final float HANDLE_UNCHECKED_CENTER_DP = 16.0f;
-    private static final float HANDLE_CHECKED_CENTER_DP = 40.0f;
+    private static final float HANDLE_CHECKED_CENTER_DP = 16f;
     private static final float HANDLE_TRAVEL_DURATION_MS = 100.0f;
     private static final float PRESS_EXTRA_DP = 4.0f;
     private static final float PRESS_DURATION_MS = 66.67f;
@@ -150,13 +150,13 @@ public class MaterialSwitch extends CompoundButton {
             canvas.drawRoundRect(rectF, trackRadius - strokeHalf, trackRadius - strokeHalf, paint);
             paint.setStyle(Paint.Style.FILL);
         }
-        float handleCenterX = lerp(HANDLE_UNCHECKED_CENTER_DP, HANDLE_CHECKED_CENTER_DP, handleProgress);
+        float handleCenterX = lerp(dp(HANDLE_UNCHECKED_CENTER_DP), trackWidth - dp(HANDLE_CHECKED_CENTER_DP), handleProgress);
         float baseDiameter = lerp(HANDLE_UNCHECKED_DP, HANDLE_CHECKED_DP, handleProgress);
         float handleDiameter = lerp(baseDiameter, HANDLE_CHECKED_DP + PRESS_EXTRA_DP, pressProgress);
         float handleRadius = dp(handleDiameter) / 2.0f;
         float centerY = trackTop + trackRadius;
-        rectF.set(dp(handleCenterX) - handleRadius, centerY - handleRadius,
-                dp(handleCenterX) + handleRadius, centerY + handleRadius);
+        rectF.set(handleCenterX - handleRadius, centerY - handleRadius,
+                handleCenterX + handleRadius, centerY + handleRadius);
         paint.setColor(currentHandleColor);
         canvas.drawRoundRect(rectF, handleRadius, handleRadius, paint);
         super.onDraw(canvas);

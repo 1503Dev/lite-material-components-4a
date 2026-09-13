@@ -23,6 +23,8 @@
         <activity android:name=".demo.SwitchDemoActivity" />
         <activity android:name=".demo.SliderDemoActivity" />
         <activity android:name=".demo.RangeSliderDemoActivity" />
+        <activity android:name=".demo.RadioButtonDemoActivity" />
+        <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
     </application>
 

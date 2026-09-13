@@ -17,6 +17,8 @@ public class MainActivity extends Activity {
             "MaterialSwitch",
             "MaterialSlider",
             "MaterialRangeSlider",
+            "MaterialRadioButton",
+            "MaterialBottomSheet",
             "MaterialDialog",
     };
 
@@ -25,6 +27,8 @@ public class MainActivity extends Activity {
             dev1503.litematerial.lmc4a.app.demo.SwitchDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.SliderDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.RangeSliderDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.RadioButtonDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.BottomSheetDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.DialogDemoActivity.class,
     };
 

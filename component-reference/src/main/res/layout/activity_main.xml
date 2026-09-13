@@ -37,5 +37,17 @@
         android:valueFrom="0"
         android:valueTo="100"
         android:layout_height="wrap_content"/>
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        android:layout_width="wrap_content"
+        android:enabled="false"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        android:layout_width="wrap_content"
+        android:enabled="false"
+        android:checked="true"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

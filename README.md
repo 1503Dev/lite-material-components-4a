@@ -7,11 +7,17 @@ A Material 3 component library compatible with Android 4.1
   * [ ] Slider/RangeSlider
   * [ ] ...
 * [x] Material3
+  * [x] Color
   * [x] Button
+  * [x] Switches
   * [x] Slider/RangeSlider
   * [x] Dialog
+  * [x] RadioButton
+  * [x] BottomSheet
+  * [ ] Checkbox
+  * [ ] Cards
+  * [ ] Chips
   * [ ] TextField
-  * [ ] BottomSheet
   * [ ] ...
 * [ ] Material Design
   * [ ] Button
