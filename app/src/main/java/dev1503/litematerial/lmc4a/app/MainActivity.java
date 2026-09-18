@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
             "MaterialRadioButton",
             "MaterialBottomSheet",
             "MaterialDialog",
+            "MaterialNavigationRail",
     };
 
     private static final Class<?>[] DEMO_CLASSES = {
@@ -30,6 +31,7 @@ public class MainActivity extends Activity {
             dev1503.litematerial.lmc4a.app.demo.RadioButtonDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.BottomSheetDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.DialogDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.NavigationRailDemoActivity.class,
     };
 
     @Override

@@ -21,4 +21,5 @@ android {
 }
 
 dependencies {
+    api(libs.androidx.viewpager)
 }

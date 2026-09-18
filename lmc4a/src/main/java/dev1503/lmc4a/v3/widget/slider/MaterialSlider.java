@@ -10,7 +10,7 @@ import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 
 public class MaterialSlider extends SeekBar {
 
-    private final SliderHelper h = new SliderHelper();
+    protected final SliderHelper h = new SliderHelper();
     private SliderPopup popup;
     private boolean isTouching = false;
     private int thumbCenterX;
