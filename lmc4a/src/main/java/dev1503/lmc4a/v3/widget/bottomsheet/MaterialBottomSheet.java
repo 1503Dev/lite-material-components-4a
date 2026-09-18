@@ -51,7 +51,7 @@ public class MaterialBottomSheet extends Dialog {
     private static final float OUT_DURATION_MS = 200.0f;
     private static final float STATE_ANIM_DURATION_MS = 240.0f;
     private static final float SHEET_SPRING_STIFFNESS = 400f;
-    private static final float SHEET_SPRING_DAMPING = 0.7f;
+    private static final float SHEET_SPRING_DAMPING = 1.0f;
     private static final float SPRING_FRAME_DURATION_MS = 1000f;
     public static final int PEEK_HEIGHT_AUTO = -1;
     private static final float MIN_PEEK_HEIGHT_DP = 96.0f;

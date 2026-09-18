@@ -14,6 +14,7 @@ A Material 3 component library compatible with Android 4.1
   * [x] Dialog
   * [x] RadioButton
   * [x] BottomSheet
+  * [x] NavigationRail
   * [ ] Checkbox
   * [ ] Cards
   * [ ] Chips

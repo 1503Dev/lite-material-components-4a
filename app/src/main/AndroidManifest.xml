@@ -26,6 +26,7 @@
         <activity android:name=".demo.RadioButtonDemoActivity" />
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
+        <activity android:name=".demo.NavigationRailDemoActivity" />
     </application>
 
 </manifest>

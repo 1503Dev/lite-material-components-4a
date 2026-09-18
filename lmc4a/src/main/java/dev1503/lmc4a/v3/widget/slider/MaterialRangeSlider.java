@@ -4,20 +4,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
-import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
-
-public class MaterialRangeSlider extends View {
-
-    private final SliderHelper h = new SliderHelper();
+public class MaterialRangeSlider extends MaterialSlider {
 
     private int lowProgress = 0;
     private int highProgress = 100;
 
     private SliderPopup lowPopup;
     private SliderPopup highPopup;
-    private boolean isTouching = false;
     private int activeThumb = -1;
 
     public interface OnRangeChangeListener {
@@ -39,52 +33,11 @@ public class MaterialRangeSlider extends View {
     }
 
     public MaterialRangeSlider(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        this(context, attrs, android.R.attr.seekBarStyle);
     }
 
     public MaterialRangeSlider(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        h.min = 0f;
-        h.max = 100f;
-        h.step = 0f;
-        h.resolveColors();
-    }
-
-    public void setColorScheme(DynamicScheme colorScheme) {
-        h.colorScheme = colorScheme;
-        h.resolveColors();
-        invalidate();
-    }
-
-    public DynamicScheme getColorScheme() {
-        return h.colorScheme;
-    }
-
-    public void setMin(float min) {
-        h.min = min;
-        invalidate();
-    }
-
-    public float getMinValue() {
-        return h.min;
-    }
-
-    public void setMax(float max) {
-        h.max = max;
-        invalidate();
-    }
-
-    public float getMaxValue() {
-        return h.max;
-    }
-
-    public void setStep(float step) {
-        h.step = step;
-        invalidate();
-    }
-
-    public float getStep() {
-        return h.step;
     }
 
     public void setLowProgress(int progress) {
@@ -151,24 +104,16 @@ public class MaterialRangeSlider extends View {
         setHighProgress(progress);
     }
 
+    public float getValue() {
+        return (getLowValue() + getHighValue()) / 2f;
+    }
+
+    public float getValueRadius() {
+        return (getMaxValue() - getMinValue()) / 2f;
+    }
+
     private int getInternalMax() {
         return (int) ((h.max - h.min) / (h.step > 0 ? h.step : 1));
-    }
-
-    public String formatProgress(float value) {
-        return h.formatProgress(value);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int[] size = h.measureView(widthMeasureSpec, heightMeasureSpec, this);
-        setMeasuredDimension(size[0], size[1]);
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        this.h.updateTrackBounds(this, w, h);
     }
 
     @Override
@@ -231,7 +176,6 @@ public class MaterialRangeSlider extends View {
                 if (activeThumb == -1) {
                     return false;
                 }
-                isTouching = true;
                 h.startMaskAnimation(activeThumb == THUMB_LOW ? SliderHelper.MASK_0 : SliderHelper.MASK_1, this);
                 if (activeThumb == THUMB_LOW) {
                     setProgressFromTouch(THUMB_LOW, touchX);
@@ -258,7 +202,6 @@ public class MaterialRangeSlider extends View {
                     hidePopup(THUMB_HIGH);
                 }
                 activeThumb = -1;
-                isTouching = false;
                 invalidate();
                 break;
         }
@@ -337,7 +280,6 @@ public class MaterialRangeSlider extends View {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        h.cancelAllMaskAnimations();
         if (lowPopup != null && lowPopup.isShowing()) {
             lowPopup.dismiss();
         }

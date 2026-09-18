@@ -1,4 +1,4 @@
-package dev1503.lmc4a.v3.anim;
+package dev1503.lmc4a.v3e.anim;
 
 public class SpringSimulation {
 
@@ -38,11 +38,6 @@ public class SpringSimulation {
         float acceleration = (springForce + dampingForce) / mass;
         velocity += acceleration * deltaTime;
         position += velocity * deltaTime;
-
-        if ((position - target) * displacement <= 0f) {
-            position = target;
-            velocity = 0f;
-        }
         return position;
     }
 }
