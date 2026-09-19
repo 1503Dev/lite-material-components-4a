@@ -6,7 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -22,6 +24,7 @@ import android.widget.Button;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
+import dev1503.lmc4a.v3.widget.ColorVariant;
 
 public class MaterialButton extends Button {
 
@@ -40,17 +43,24 @@ public class MaterialButton extends Button {
     private static final float ELEVATED_SHADOW_RADIUS_DP = 2.0f;
     private static final float ELEVATED_SHADOW_OFFSET_DP = 1.0f;
     private static final float ELEVATED_SHADOW_ALPHA = 0.30f;
+    private static final float ICON_ONLY_SIZE_DP = 24.0f;
+    private static final float ICON_BUTTON_SIZE_DP = 40.0f;
+    private static final float ICON_WITH_LABEL_SIZE_DP = 18.0f;
+    private static final float ICON_LABEL_GAP_DP = 8.0f;
+    private static final float DISABLED_ICON_ALPHA = 0.38f;
 
-    private DynamicScheme colorScheme = publicColorScheme;
-    private ButtonStyle buttonStyle = ButtonStyle.FILLED;
-    private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
-    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF rectF = new RectF();
-    private final GradientDrawable contentDrawable = new GradientDrawable();
-    private final GradientDrawable maskDrawable = new GradientDrawable();
-    private final float verticalInset;
-    private final float defaultTotalHeight;
-    private float cornerRadius;
+    protected DynamicScheme colorScheme = publicColorScheme;
+    protected ButtonStyle buttonStyle = ButtonStyle.FILLED;
+    protected ColorVariant colorVariant = ColorVariant.PRIMARY;
+    protected Drawable icon;
+    protected final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
+    protected final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    protected final RectF rectF = new RectF();
+    protected final GradientDrawable contentDrawable = new GradientDrawable();
+    protected final GradientDrawable maskDrawable = new GradientDrawable();
+    protected final float verticalInset;
+    protected final float defaultTotalHeight;
+    protected float cornerRadius;
 
     public MaterialButton(Context context) {
         this(context, null);
@@ -73,10 +83,10 @@ public class MaterialButton extends Button {
             setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
-                    int inset = (int) (verticalInset + 0.5f);
+                    int inset = (int) (resolveVerticalInset() + 0.5f);
                     outline.setRoundRect(
                             0, inset, view.getWidth(), view.getHeight() - inset, cornerRadius);
-                    outline.setAlpha(buttonStyle == ButtonStyle.ELEVATED ? 1.0f : 0.0f);
+                    outline.setAlpha(resolveButtonStyle() == ButtonStyle.ELEVATED ? 1.0f : 0.0f);
                 }
             });
             setClipToOutline(true);
@@ -98,8 +108,43 @@ public class MaterialButton extends Button {
         refreshColorScheme();
     }
 
-    public ButtonStyle getButtonStyle() {
+    protected ButtonStyle resolveButtonStyle() {
         return buttonStyle;
+    }
+
+    protected float resolveVerticalInset() {
+        return resolveButtonStyle() == ButtonStyle.ICON ? 0.0f : verticalInset;
+    }
+
+    public ButtonStyle getButtonStyle() {
+        return resolveButtonStyle();
+    }
+
+    public void setColorVariant(ColorVariant colorVariant) {
+        if (colorVariant == null) {
+            colorVariant = ColorVariant.PRIMARY;
+        }
+        if (this.colorVariant != colorVariant) {
+            this.colorVariant = colorVariant;
+            refreshColorScheme();
+        }
+    }
+
+    public ColorVariant getColorVariant() {
+        return colorVariant;
+    }
+
+    public void setIcon(Drawable icon) {
+        this.icon = icon;
+        if (icon != null) {
+            icon.mutate();
+        }
+        requestLayout();
+        invalidate();
+    }
+
+    public Drawable getIcon() {
+        return icon;
     }
 
     public void setCornerRadiusDp(float cornerRadiusDp) {
@@ -120,22 +165,46 @@ public class MaterialButton extends Button {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        int widthMode = View.MeasureSpec.getMode(widthMeasureSpec);
+        int heightMode = View.MeasureSpec.getMode(heightMeasureSpec);
+        int widthSpecSize = View.MeasureSpec.getSize(widthMeasureSpec);
+        int heightSpecSize = View.MeasureSpec.getSize(heightMeasureSpec);
+
+        ButtonStyle style = resolveButtonStyle();
+        if (style == ButtonStyle.ICON
+                || getText() == null || getText().length() == 0) {
+            int size = (int) ((style == ButtonStyle.ICON
+                    ? dp(ICON_BUTTON_SIZE_DP) : defaultTotalHeight) + 0.5f);
+            int maxReasonAbly = size * 2;
+            if (widthMode == View.MeasureSpec.EXACTLY && widthSpecSize > 0
+                    && widthSpecSize <= maxReasonAbly) {
+                size = Math.max(size, widthSpecSize);
+            }
+            if (heightMode == View.MeasureSpec.EXACTLY && heightSpecSize > 0
+                    && heightSpecSize <= maxReasonAbly) {
+                size = Math.max(size, heightSpecSize);
+            }
+            if (widthMode != View.MeasureSpec.UNSPECIFIED && widthSpecSize > 0) {
+                size = Math.min(size, widthSpecSize);
+            }
+            if (heightMode != View.MeasureSpec.UNSPECIFIED && heightSpecSize > 0) {
+                size = Math.min(size, heightSpecSize);
+            }
+            size = Math.max(size, 1);
+            setMeasuredDimension(size, size);
+            return;
+        }
+
         int width = resolveMeasuredWidth(widthMeasureSpec);
         if (width != getMeasuredWidth()) {
-            // TextView 只在测量阶段按测量宽度重建内部 Layout。若仅用 setMeasuredDimension
-            // 放大控件宽度，Layout 的宽度仍是文本自身的宽度，TEXT_ALIGNMENT_CENTER 便没有
-            // 可居中的余量，短文本会贴着左侧内边距绘制。这里用最终宽度重新测量一次，
-            // 让 Layout 与控件宽度保持一致，文本才会真正水平居中。
             super.onMeasure(
                     View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                     heightMeasureSpec);
         }
 
-        int heightMode = View.MeasureSpec.getMode(heightMeasureSpec);
         int height = getMeasuredHeight();
         if (heightMode != View.MeasureSpec.EXACTLY) {
             height = Math.max(height, (int) (defaultTotalHeight + 0.5f));
-            int heightSpecSize = View.MeasureSpec.getSize(heightMeasureSpec);
             if (heightMode == View.MeasureSpec.AT_MOST && heightSpecSize > 0) {
                 height = Math.min(height, heightSpecSize);
             }
@@ -149,6 +218,9 @@ public class MaterialButton extends Button {
         if (widthMode == View.MeasureSpec.EXACTLY) {
             return width;
         }
+        if (icon != null) {
+            width += (int) (dp(ICON_WITH_LABEL_SIZE_DP) + dp(ICON_LABEL_GAP_DP) + 0.5f);
+        }
         width = Math.max(width, (int) (dp(DEFAULT_MIN_WIDTH_DP) + 0.5f));
         int widthSpecSize = View.MeasureSpec.getSize(widthMeasureSpec);
         if (widthMode == View.MeasureSpec.AT_MOST && widthSpecSize > 0) {
@@ -160,32 +232,96 @@ public class MaterialButton extends Button {
     @Override
     protected void onDraw(Canvas canvas) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            rectF.set(0.0f, verticalInset, getWidth(), getHeight() - verticalInset);
-            paint.setColor(resolveContainerColor());
-            if (buttonStyle == ButtonStyle.ELEVATED) {
-                paint.setShadowLayer(
-                        dp(ELEVATED_SHADOW_RADIUS_DP),
-                        0.0f,
-                        dp(ELEVATED_SHADOW_OFFSET_DP),
-                        applyAlphaFraction(
-                                dynamicColors.shadow().getArgb(colorScheme),
-                                ELEVATED_SHADOW_ALPHA));
-            }
-            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
-            paint.clearShadowLayer();
-            if (isPressed()) {
-                paint.setColor(applyAlphaFraction(resolveEnabledTextColor(), PRESSED_RIPPLE_ALPHA));
-                canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
-            }
-            if (buttonStyle == ButtonStyle.OUTLINED) {
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(dp(OUTLINE_STROKE_DP));
-                paint.setColor(resolveStrokeColor());
-                canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
-                paint.setStyle(Paint.Style.FILL);
-            }
+            drawPreLollipopContainer(canvas);
         }
-        super.onDraw(canvas);
+        if (icon != null) {
+            drawIconAndText(canvas);
+        } else {
+            super.onDraw(canvas);
+        }
+    }
+
+    private void drawIconAndText(Canvas canvas) {
+        CharSequence text = getText();
+        boolean hasText = text != null && text.length() > 0;
+        float cx = getWidth() / 2f;
+        float cy = getHeight() / 2f;
+        int fg = isEnabled()
+                ? resolveEnabledTextColor()
+                : applyAlphaFraction(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_ICON_ALPHA);
+
+        if (!hasText) {
+            drawIcon(canvas, cx - dp(ICON_ONLY_SIZE_DP) / 2f, cy, dp(ICON_ONLY_SIZE_DP), fg);
+            return;
+        }
+
+        setupIconTextPaint();
+        String s = text.toString();
+        float iconSize = dp(ICON_WITH_LABEL_SIZE_DP);
+        float labelWidth = paint.measureText(s);
+        float unitWidth = iconSize + dp(ICON_LABEL_GAP_DP) + labelWidth;
+        float availLeft = getPaddingLeft();
+        float availWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        float startX = availLeft + Math.max(0f, (availWidth - unitWidth) / 2f);
+
+        drawIcon(canvas, startX, cy, iconSize, fg);
+        paint.setColor(fg);
+        float baseline = cy - (paint.ascent() + paint.descent()) / 2f;
+        canvas.drawText(s, startX + iconSize + dp(ICON_LABEL_GAP_DP), baseline, paint);
+    }
+
+    private void drawIcon(Canvas canvas, float left, float centerY, float iconSize, int color) {
+        if (icon == null) {
+            return;
+        }
+        int l = (int) left;
+        int t = (int) (centerY - iconSize / 2f);
+        icon.setBounds(l, t, (int) (l + iconSize + 0.5f), (int) (t + iconSize + 0.5f));
+        applyIconTint(icon, color);
+        icon.draw(canvas);
+    }
+
+    private void setupIconTextPaint() {
+        paint.setTextSize(getTextSize());
+        Typeface typeface = getTypeface();
+        paint.setTypeface(typeface == null ? Typeface.DEFAULT : typeface);
+        paint.setTextAlign(Paint.Align.LEFT);
+    }
+
+    protected void applyIconTint(Drawable drawable, int color) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable.setTint(color);
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    protected void drawPreLollipopContainer(Canvas canvas) {
+        float inset = resolveVerticalInset();
+        rectF.set(0.0f, inset, getWidth(), getHeight() - inset);
+        paint.setColor(resolveContainerColor());
+        if (resolveButtonStyle() == ButtonStyle.ELEVATED) {
+            paint.setShadowLayer(
+                    dp(ELEVATED_SHADOW_RADIUS_DP),
+                    0.0f,
+                    dp(ELEVATED_SHADOW_OFFSET_DP),
+                    applyAlphaFraction(
+                            dynamicColors.shadow().getArgb(colorScheme),
+                            ELEVATED_SHADOW_ALPHA));
+        }
+        canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
+        paint.clearShadowLayer();
+        if (isPressed()) {
+            paint.setColor(applyAlphaFraction(resolveEnabledTextColor(), PRESSED_RIPPLE_ALPHA));
+            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
+        }
+        if (resolveButtonStyle() == ButtonStyle.OUTLINED) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(dp(OUTLINE_STROKE_DP));
+            paint.setColor(resolveStrokeColor());
+            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint);
+            paint.setStyle(Paint.Style.FILL);
+        }
     }
 
     @Override
@@ -194,18 +330,18 @@ public class MaterialButton extends Button {
         invalidate();
     }
 
-    private void refreshColorScheme() {
+    protected void refreshColorScheme() {
         if (colorScheme == null) {
             colorScheme = Imc.publicColorScheme;
         }
         setTextColor(resolveTextColors());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             applyRippleBackground();
-            setElevation(buttonStyle == ButtonStyle.ELEVATED ? dp(ELEVATED_ELEVATION_DP) : 0.0f);
+            setElevation(resolveButtonStyle() == ButtonStyle.ELEVATED ? dp(ELEVATED_ELEVATION_DP) : 0.0f);
             invalidateOutline();
         } else {
             setBackground(null);
-            setLayerType(buttonStyle == ButtonStyle.ELEVATED
+            setLayerType(resolveButtonStyle() == ButtonStyle.ELEVATED
                     ? View.LAYER_TYPE_SOFTWARE : View.LAYER_TYPE_NONE, null);
         }
         setGravity(Gravity.CENTER);
@@ -217,10 +353,10 @@ public class MaterialButton extends Button {
         invalidate();
     }
 
-    private void applyRippleBackground() {
+    protected void applyRippleBackground() {
         contentDrawable.setCornerRadius(cornerRadius);
         contentDrawable.setColor(resolveContainerColors());
-        if (buttonStyle == ButtonStyle.OUTLINED) {
+        if (resolveButtonStyle() == ButtonStyle.OUTLINED) {
             int strokeWidth = (int) (dp(OUTLINE_STROKE_DP) + 0.5f);
             contentDrawable.setStroke(strokeWidth, resolveStrokeColors());
         } else {
@@ -233,37 +369,77 @@ public class MaterialButton extends Button {
                 contentDrawable,
                 maskDrawable);
         LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{rippleDrawable});
-        int inset = (int) (verticalInset + 0.5f);
+        int inset = (int) (resolveVerticalInset() + 0.5f);
         layerDrawable.setLayerInset(0, 0, inset, 0, inset);
         setBackground(layerDrawable);
     }
 
-    private int resolveRippleColor() {
+    protected int resolveRippleColor() {
         return applyAlphaFraction(resolveEnabledTextColor(), PRESSED_RIPPLE_ALPHA);
     }
 
-    private int resolveContainerColor() {
+    protected int resolveContainerColor() {
         if (!isEnabled()) {
             return applyAlphaFraction(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_CONTAINER_ALPHA);
         }
         return resolveEnabledContainerColor();
     }
 
-    private int resolveEnabledContainerColor() {
-        if (buttonStyle == ButtonStyle.ELEVATED) {
+    protected int resolveEnabledContainerColor() {
+        if (resolveButtonStyle() == ButtonStyle.ELEVATED && colorVariant == ColorVariant.PRIMARY) {
             return dynamicColors.surfaceContainerLow().getArgb(colorScheme);
         }
-        if (buttonStyle == ButtonStyle.FILLED) {
-            return dynamicColors.primary().getArgb(colorScheme);
+        if (resolveButtonStyle() == ButtonStyle.OUTLINED
+                || resolveButtonStyle() == ButtonStyle.TEXT
+                || resolveButtonStyle() == ButtonStyle.ICON) {
+            return Color.TRANSPARENT;
         }
-        return Color.TRANSPARENT;
+        return resolveVariantColor();
     }
 
-    private int resolveEnabledTextColor() {
-        if (buttonStyle == ButtonStyle.FILLED) {
-            return dynamicColors.onPrimary().getArgb(colorScheme);
+    protected int resolveEnabledTextColor() {
+        if (colorVariant == ColorVariant.PRIMARY
+                && (resolveButtonStyle() == ButtonStyle.ELEVATED
+                || resolveButtonStyle() == ButtonStyle.OUTLINED
+                || resolveButtonStyle() == ButtonStyle.TEXT
+                || resolveButtonStyle() == ButtonStyle.ICON)) {
+            return dynamicColors.primary().getArgb(colorScheme);
         }
-        return dynamicColors.primary().getArgb(colorScheme);
+        return resolveOnVariantColor();
+    }
+
+    protected int resolveVariantColor() {
+        switch (colorVariant) {
+            case PRIMARY_CONTAINER:
+                return dynamicColors.primaryContainer().getArgb(colorScheme);
+            case SECONDARY:
+                return dynamicColors.secondary().getArgb(colorScheme);
+            case SECONDARY_CONTAINER:
+                return dynamicColors.secondaryContainer().getArgb(colorScheme);
+            case TERTIARY:
+                return dynamicColors.tertiary().getArgb(colorScheme);
+            case TERTIARY_CONTAINER:
+                return dynamicColors.tertiaryContainer().getArgb(colorScheme);
+            default:
+                return dynamicColors.primary().getArgb(colorScheme);
+        }
+    }
+
+    protected int resolveOnVariantColor() {
+        switch (colorVariant) {
+            case PRIMARY_CONTAINER:
+                return dynamicColors.onPrimaryContainer().getArgb(colorScheme);
+            case SECONDARY:
+                return dynamicColors.onSecondary().getArgb(colorScheme);
+            case SECONDARY_CONTAINER:
+                return dynamicColors.onSecondaryContainer().getArgb(colorScheme);
+            case TERTIARY:
+                return dynamicColors.onTertiary().getArgb(colorScheme);
+            case TERTIARY_CONTAINER:
+                return dynamicColors.onTertiaryContainer().getArgb(colorScheme);
+            default:
+                return dynamicColors.onPrimary().getArgb(colorScheme);
+        }
     }
 
     private int resolveStrokeColor() {
@@ -282,7 +458,7 @@ public class MaterialButton extends Button {
                 new int[]{disabled, enabled});
     }
 
-    private ColorStateList resolveContainerColors() {
+    protected ColorStateList resolveContainerColors() {
         int enabled = resolveEnabledContainerColor();
         int disabled = applyAlphaFraction(
                 dynamicColors.onSurface().getArgb(colorScheme), DISABLED_CONTAINER_ALPHA);
@@ -300,12 +476,20 @@ public class MaterialButton extends Button {
                 new int[]{disabled, enabled});
     }
 
-    private static int applyAlphaFraction(int argb, float alphaFraction) {
+    protected static int applyAlphaFraction(int argb, float alphaFraction) {
         int alpha = (int) (Color.alpha(argb) * alphaFraction);
         return (argb & 0x00ffffff) | (alpha << 24);
     }
 
-    private float dp(float valueDp) {
+    protected static int darken(int argb, float fraction) {
+        int alpha = Color.alpha(argb);
+        int r = (int) (Color.red(argb) * (1.0f - fraction));
+        int g = (int) (Color.green(argb) * (1.0f - fraction));
+        int b = (int) (Color.blue(argb) * (1.0f - fraction));
+        return Color.argb(alpha, r, g, b);
+    }
+
+    protected float dp(float valueDp) {
         return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, valueDp, getResources().getDisplayMetrics());
     }
