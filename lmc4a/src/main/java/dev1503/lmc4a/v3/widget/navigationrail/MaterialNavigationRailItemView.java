@@ -59,8 +59,11 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private ValueAnimator checkAnimator;
     private long lastFrameTime;
     private RippleDrawable rippleDrawable;
+    private Drawable rippleMask;
     private final Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF lastRippleRect = new RectF();
+
+    private boolean initialized;
 
     public MaterialNavigationRailItemView(Context context) {
         this(context, null);
@@ -77,6 +80,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         setClickable(true);
         setGravity(Gravity.CENTER);
         setPadding(0, 0, 0, 0);
+        initialized = true;
         refreshRippleMask();
     }
 
@@ -162,6 +166,8 @@ public class MaterialNavigationRailItemView extends CompoundButton {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        refreshRippleMask();
+
         int indicatorColor = resolveIndicatorColor();
         int foregroundColor = resolveForegroundColor();
 
@@ -219,10 +225,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     }
 
     private void refreshRippleMask() {
-        if (paint == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return;
-        }
-        if (isPressed()) {
+        if (!initialized || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
         RectF rect = computeIconAreaRect();
@@ -230,16 +233,24 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             return;
         }
         lastRippleRect.set(rect);
-        setBackground(null);
-        rippleDrawable = new RippleDrawable(ColorStateList.valueOf(Color.TRANSPARENT), null, new PillMask());
+        if (rippleDrawable == null) {
+            rippleMask = new PillMask();
+            rippleDrawable = new RippleDrawable(
+                    ColorStateList.valueOf(resolveRippleColor()), null, rippleMask);
+            setBackground(rippleDrawable);
+        } else {
+            rippleDrawable.setDrawableByLayerId(android.R.id.mask, rippleMask);
+        }
         updateRippleColor();
-        setBackground(rippleDrawable);
+    }
+
+    private int resolveRippleColor() {
+        return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), PRESSED_OVERLAY_ALPHA);
     }
 
     private void updateRippleColor() {
         if (rippleDrawable != null) {
-            rippleDrawable.setColor(ColorStateList.valueOf(
-                    applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), PRESSED_OVERLAY_ALPHA)));
+            rippleDrawable.setColor(ColorStateList.valueOf(resolveRippleColor()));
         }
     }
 
@@ -342,6 +353,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
 
                 checkProgress = checkSpring.update(delta);
                 invalidate();
+                refreshRippleMask();
 
                 if (checkSpring.isAtRest()) {
                     animation.cancel();

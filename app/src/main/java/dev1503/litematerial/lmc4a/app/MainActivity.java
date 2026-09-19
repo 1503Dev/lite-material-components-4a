@@ -21,6 +21,9 @@ public class MainActivity extends Activity {
             "MaterialBottomSheet",
             "MaterialDialog",
             "MaterialNavigationRail",
+            "MaterialFloatingActionButton",
+            "MaterialCardView",
+            "MaterialTextField",
     };
 
     private static final Class<?>[] DEMO_CLASSES = {
@@ -32,6 +35,9 @@ public class MainActivity extends Activity {
             dev1503.litematerial.lmc4a.app.demo.BottomSheetDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.DialogDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.NavigationRailDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.FloatingActionButtonDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.CardViewDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.TextFieldDemoActivity.class,
     };
 
     @Override

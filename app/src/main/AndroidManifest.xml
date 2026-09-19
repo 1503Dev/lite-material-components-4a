@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".demo.ButtonDemoActivity" />
+        <activity android:name=".demo.ButtonDemoActivity" android:exported="true" />
         <activity android:name=".demo.SwitchDemoActivity" />
         <activity android:name=".demo.SliderDemoActivity" />
         <activity android:name=".demo.RangeSliderDemoActivity" />
@@ -27,6 +27,10 @@
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
         <activity android:name=".demo.NavigationRailDemoActivity" />
+        <activity android:name=".demo.FloatingActionButtonDemoActivity" />
+        <activity android:name=".demo.CardViewDemoActivity" />
+        <activity android:name=".demo.TextFieldDemoActivity"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

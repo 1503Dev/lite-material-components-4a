@@ -4,5 +4,6 @@ public enum ButtonStyle {
     FILLED,
     ELEVATED,
     OUTLINED,
-    TEXT
+    TEXT,
+    ICON
 }
