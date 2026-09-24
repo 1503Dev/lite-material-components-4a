@@ -70,7 +70,7 @@ public class MaterialTextField extends EditText {
     private boolean initialized;
 
     private CharSequence label;
-    private CharSequence placeholderText;
+    private CharSequence placeholder;
     private CharSequence supportingText;
     private CharSequence errorText;
     private boolean counterEnabled;
@@ -78,8 +78,36 @@ public class MaterialTextField extends EditText {
 
     private Drawable leadingIcon;
     private Drawable trailingIcon;
+    private OnClickListener leadingIconClickListener;
     private OnClickListener trailingIconClickListener;
+    private boolean leadingIconPressed;
     private boolean trailingIconPressed;
+
+    private float labelTextSizeSp = LABEL_FLOATED_SIZE_SP;
+    private boolean hasLabelTextSizeSp;
+    private float supportingTextSizeSp = SUPPORTING_TEXT_SIZE_SP;
+    private boolean hasSupportingTextSizeSp;
+
+    private int containerColor;
+    private boolean hasContainerColor;
+    private int contentColor;
+    private boolean hasContentColor;
+    private int labelColor;
+    private boolean hasLabelColor;
+    private int placeholderColor;
+    private boolean hasPlaceholderColor;
+    private int supportingTextColor;
+    private boolean hasSupportingTextColor;
+    private int errorColor;
+    private boolean hasErrorColor;
+    private int indicatorColor;
+    private boolean hasIndicatorColor;
+    private int focusedIndicatorColor;
+    private boolean hasFocusedIndicatorColor;
+    private int leadingIconColor;
+    private boolean hasLeadingIconColor;
+    private int trailingIconColor;
+    private boolean hasTrailingIconColor;
 
     private float labelProgress;
     private ValueAnimator labelAnimator;
@@ -107,7 +135,7 @@ public class MaterialTextField extends EditText {
 
     // ------------------------------------------------------------------ 样式与配色
 
-    public void setTextFieldStyle(TextFieldStyle textFieldStyle) {
+    public void setStyle(TextFieldStyle textFieldStyle) {
         if (textFieldStyle == null) {
             textFieldStyle = TextFieldStyle.FILLED;
         }
@@ -119,12 +147,13 @@ public class MaterialTextField extends EditText {
         }
     }
 
-    public TextFieldStyle getTextFieldStyle() {
+    public TextFieldStyle getStyle() {
         return textFieldStyle;
     }
 
     public void setColorScheme(DynamicScheme colorScheme) {
         this.colorScheme = colorScheme == null ? publicColorScheme : colorScheme;
+        clearAllColorOverrides();
         refreshColors();
     }
 
@@ -139,6 +168,277 @@ public class MaterialTextField extends EditText {
 
     public float getCornerRadiusDp() {
         return cornerRadius / getResources().getDisplayMetrics().density;
+    }
+
+    public void clearCornerRadiusDp() {
+        setCornerRadiusDp(CORNER_RADIUS_DP);
+    }
+
+    public void setContainerColor(int containerColor) {
+        this.containerColor = containerColor;
+        this.hasContainerColor = true;
+        invalidate();
+    }
+
+    public int getContainerColor() {
+        return resolveContainerColor();
+    }
+
+    public boolean hasContainerColor() {
+        return hasContainerColor;
+    }
+
+    public void clearContainerColor() {
+        this.hasContainerColor = false;
+        invalidate();
+    }
+
+    public void setContentColor(int contentColor) {
+        this.contentColor = contentColor;
+        this.hasContentColor = true;
+        refreshColors();
+    }
+
+    public int getContentColor() {
+        return resolveContentColor();
+    }
+
+    public boolean hasContentColor() {
+        return hasContentColor;
+    }
+
+    public void clearContentColor() {
+        this.hasContentColor = false;
+        refreshColors();
+    }
+
+    public void setLabelColor(int labelColor) {
+        this.labelColor = labelColor;
+        this.hasLabelColor = true;
+        invalidate();
+    }
+
+    public int getLabelColor() {
+        return resolveLabelColor();
+    }
+
+    public boolean hasLabelColor() {
+        return hasLabelColor;
+    }
+
+    public void clearLabelColor() {
+        this.hasLabelColor = false;
+        invalidate();
+    }
+
+    public void setPlaceholderColor(int placeholderColor) {
+        this.placeholderColor = placeholderColor;
+        this.hasPlaceholderColor = true;
+        invalidate();
+    }
+
+    public int getPlaceholderColor() {
+        return resolvePlaceholderColor();
+    }
+
+    public boolean hasPlaceholderColor() {
+        return hasPlaceholderColor;
+    }
+
+    public void clearPlaceholderColor() {
+        this.hasPlaceholderColor = false;
+        invalidate();
+    }
+
+    public void setSupportingTextColor(int supportingTextColor) {
+        this.supportingTextColor = supportingTextColor;
+        this.hasSupportingTextColor = true;
+        invalidate();
+    }
+
+    public int getSupportingTextColor() {
+        return resolveSupportingTextColor();
+    }
+
+    public boolean hasSupportingTextColor() {
+        return hasSupportingTextColor;
+    }
+
+    public void clearSupportingTextColor() {
+        this.hasSupportingTextColor = false;
+        invalidate();
+    }
+
+    public void setErrorColor(int errorColor) {
+        this.errorColor = errorColor;
+        this.hasErrorColor = true;
+        invalidate();
+    }
+
+    public int getErrorColor() {
+        return resolveErrorColor();
+    }
+
+    public boolean hasErrorColor() {
+        return hasErrorColor;
+    }
+
+    public void clearErrorColor() {
+        this.hasErrorColor = false;
+        invalidate();
+    }
+
+    public void setIndicatorColor(int indicatorColor) {
+        this.indicatorColor = indicatorColor;
+        this.hasIndicatorColor = true;
+        invalidate();
+    }
+
+    public int getIndicatorColor() {
+        return hasIndicatorColor
+                ? indicatorColor
+                : (textFieldStyle == TextFieldStyle.OUTLINED
+                        ? dynamicColors.outline().getArgb(colorScheme)
+                        : dynamicColors.onSurfaceVariant().getArgb(colorScheme));
+    }
+
+    public boolean hasIndicatorColor() {
+        return hasIndicatorColor;
+    }
+
+    public void clearIndicatorColor() {
+        this.hasIndicatorColor = false;
+        invalidate();
+    }
+
+    public void setFocusedIndicatorColor(int focusedIndicatorColor) {
+        this.focusedIndicatorColor = focusedIndicatorColor;
+        this.hasFocusedIndicatorColor = true;
+        invalidate();
+    }
+
+    public int getFocusedIndicatorColor() {
+        return resolveFocusedIndicatorColor();
+    }
+
+    public boolean hasFocusedIndicatorColor() {
+        return hasFocusedIndicatorColor;
+    }
+
+    public void clearFocusedIndicatorColor() {
+        this.hasFocusedIndicatorColor = false;
+        invalidate();
+    }
+
+    public void setLeadingIconColor(int leadingIconColor) {
+        this.leadingIconColor = leadingIconColor;
+        this.hasLeadingIconColor = true;
+        invalidate();
+    }
+
+    public int getLeadingIconColor() {
+        return resolveLeadingIconColor();
+    }
+
+    public boolean hasLeadingIconColor() {
+        return hasLeadingIconColor;
+    }
+
+    public void clearLeadingIconColor() {
+        this.hasLeadingIconColor = false;
+        invalidate();
+    }
+
+    public void setTrailingIconColor(int trailingIconColor) {
+        this.trailingIconColor = trailingIconColor;
+        this.hasTrailingIconColor = true;
+        invalidate();
+    }
+
+    public int getTrailingIconColor() {
+        return resolveTrailingIconColor();
+    }
+
+    public boolean hasTrailingIconColor() {
+        return hasTrailingIconColor;
+    }
+
+    public void clearTrailingIconColor() {
+        this.hasTrailingIconColor = false;
+        invalidate();
+    }
+
+    private void clearAllColorOverrides() {
+        hasContainerColor = false;
+        hasContentColor = false;
+        hasLabelColor = false;
+        hasPlaceholderColor = false;
+        hasSupportingTextColor = false;
+        hasErrorColor = false;
+        hasIndicatorColor = false;
+        hasFocusedIndicatorColor = false;
+        hasLeadingIconColor = false;
+        hasTrailingIconColor = false;
+    }
+
+    @Override
+    public void setTextSize(int unit, float size) {
+        super.setTextSize(unit, size);
+        if (initialized) {
+            updatePaddings();
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    @Override
+    public void setTextSize(float size) {
+        super.setTextSize(size);
+        if (initialized) {
+            updatePaddings();
+            requestLayout();
+            invalidate();
+        }
+    }
+
+    public void setLabelTextSizeSp(float labelTextSizeSp) {
+        this.labelTextSizeSp = Math.max(0f, labelTextSizeSp);
+        this.hasLabelTextSizeSp = true;
+        invalidate();
+    }
+
+    public float getLabelTextSizeSp() {
+        return hasLabelTextSizeSp ? labelTextSizeSp : LABEL_FLOATED_SIZE_SP;
+    }
+
+    public boolean hasLabelTextSizeSp() {
+        return hasLabelTextSizeSp;
+    }
+
+    public void clearLabelTextSizeSp() {
+        this.hasLabelTextSizeSp = false;
+        this.labelTextSizeSp = LABEL_FLOATED_SIZE_SP;
+        invalidate();
+    }
+
+    public void setSupportingTextSizeSp(float supportingTextSizeSp) {
+        this.supportingTextSizeSp = Math.max(0f, supportingTextSizeSp);
+        this.hasSupportingTextSizeSp = true;
+        updateSupportingRow();
+    }
+
+    public float getSupportingTextSizeSp() {
+        return hasSupportingTextSizeSp ? supportingTextSizeSp : SUPPORTING_TEXT_SIZE_SP;
+    }
+
+    public boolean hasSupportingTextSizeSp() {
+        return hasSupportingTextSizeSp;
+    }
+
+    public void clearSupportingTextSizeSp() {
+        this.hasSupportingTextSizeSp = false;
+        this.supportingTextSizeSp = SUPPORTING_TEXT_SIZE_SP;
+        updateSupportingRow();
     }
 
     // ------------------------------------------------------------------ 标签 / 占位文字
@@ -162,13 +462,13 @@ public class MaterialTextField extends EditText {
         return hint != null && hint.length() > 0 ? hint : null;
     }
 
-    public void setPlaceholderText(CharSequence placeholderText) {
-        this.placeholderText = placeholderText;
+    public void setPlaceholder(CharSequence placeholder) {
+        this.placeholder = placeholder;
         invalidate();
     }
 
-    public CharSequence getPlaceholderText() {
-        return placeholderText;
+    public CharSequence getPlaceholder() {
+        return placeholder;
     }
 
     // ------------------------------------------------------------------ 辅助文字行
@@ -256,6 +556,10 @@ public class MaterialTextField extends EditText {
 
     public void setOnTrailingIconClickListener(OnClickListener listener) {
         this.trailingIconClickListener = listener;
+    }
+
+    public void setOnLeadingIconClickListener(OnClickListener listener) {
+        this.leadingIconClickListener = listener;
     }
 
     // ------------------------------------------------------------------ EditText 回调
@@ -430,7 +734,7 @@ public class MaterialTextField extends EditText {
     }
 
     private void drawPlaceholder(Canvas canvas) {
-        if (placeholderText == null || placeholderText.length() == 0) {
+        if (placeholder == null || placeholder.length() == 0) {
             return;
         }
         if (!isFocused() || length() > 0) {
@@ -438,12 +742,10 @@ public class MaterialTextField extends EditText {
         }
         textPaint.setTypeface(getTypeface());
         textPaint.setTextSize(getTextSize());
-        textPaint.setColor(isEnabled()
-                ? dynamicColors.onSurfaceVariant().getArgb(colorScheme)
-                : applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA));
+        textPaint.setColor(resolvePlaceholderColor());
         boolean rtl = isRtl();
         textPaint.setTextAlign(rtl ? Paint.Align.RIGHT : Paint.Align.LEFT);
-        canvas.drawText(placeholderText, 0, placeholderText.length(),
+        canvas.drawText(placeholder, 0, placeholder.length(),
                 contentStart(), inputBaseline(), textPaint);
     }
 
@@ -451,26 +753,28 @@ public class MaterialTextField extends EditText {
         float centerY = boxRect.centerY();
         float iconSize = dp(ICON_SIZE_DP);
         boolean rtl = isRtl();
-        int color = isEnabled()
-                ? (isErrorEnabled()
-                        ? dynamicColors.error().getArgb(colorScheme)
-                        : dynamicColors.onSurfaceVariant().getArgb(colorScheme))
-                : applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA);
 
         if (leadingIcon != null) {
             float left = rtl ? getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize : dp(ICON_EDGE_PADDING_DP);
-            drawIcon(canvas, leadingIcon, left, centerY, iconSize, color);
+            if (leadingIconPressed) {
+                drawIconStateLayer(canvas, left, centerY, iconSize);
+            }
+            drawIcon(canvas, leadingIcon, left, centerY, iconSize, resolveLeadingIconColor());
         }
         if (trailingIcon != null) {
             float left = rtl ? dp(ICON_EDGE_PADDING_DP) : getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize;
             if (trailingIconPressed) {
-                iconPaint.setColor(applyAlpha(
-                        dynamicColors.onSurface().getArgb(colorScheme), ICON_STATE_LAYER_ALPHA));
-                float radius = dp(ICON_STATE_LAYER_DP) / 2f;
-                canvas.drawCircle(left + iconSize / 2f, centerY, radius, iconPaint);
+                drawIconStateLayer(canvas, left, centerY, iconSize);
             }
-            drawIcon(canvas, trailingIcon, left, centerY, iconSize, color);
+            drawIcon(canvas, trailingIcon, left, centerY, iconSize, resolveTrailingIconColor());
         }
+    }
+
+    private void drawIconStateLayer(Canvas canvas, float iconLeft, float centerY, float iconSize) {
+        iconPaint.setColor(applyAlpha(
+                dynamicColors.onSurface().getArgb(colorScheme), ICON_STATE_LAYER_ALPHA));
+        float radius = dp(ICON_STATE_LAYER_DP) / 2f;
+        canvas.drawCircle(iconLeft + iconSize / 2f, centerY, radius, iconPaint);
     }
 
     private void drawIcon(Canvas canvas, Drawable drawable, float left, float centerY, float size, int color) {
@@ -489,7 +793,7 @@ public class MaterialTextField extends EditText {
         float rowTop = getHeight() - rowHeight;
         boolean rtl = isRtl();
         textPaint.setTypeface(Typeface.DEFAULT);
-        textPaint.setTextSize(sp(SUPPORTING_TEXT_SIZE_SP));
+        textPaint.setTextSize(sp(supportingTextSizeSp));
         float baseline = rowTop + dp(SUPPORTING_TEXT_TOP_GAP_DP) - textPaint.ascent();
 
         CharSequence text = isErrorEnabled() ? errorText : supportingText;
@@ -502,7 +806,7 @@ public class MaterialTextField extends EditText {
         if (counterEnabled) {
             boolean exceeded = counterMaxLength > 0 && length() > counterMaxLength;
             textPaint.setColor(exceeded
-                    ? dynamicColors.error().getArgb(colorScheme)
+                    ? resolveErrorColor()
                     : resolveSupportingTextColor());
             textPaint.setTextAlign(rtl ? Paint.Align.LEFT : Paint.Align.RIGHT);
             float x = rtl ? getPaddingLeft() : getWidth() - getPaddingRight();
@@ -538,7 +842,11 @@ public class MaterialTextField extends EditText {
     }
 
     private float resolveSupportingRowHeight() {
-        return isSupportingRowVisible() ? dp(SUPPORTING_ROW_HEIGHT_DP) : 0f;
+        if (!isSupportingRowVisible()) {
+            return 0f;
+        }
+        return Math.max(dp(SUPPORTING_ROW_HEIGHT_DP),
+                dp(SUPPORTING_TEXT_TOP_GAP_DP) + measureLineHeight(sp(supportingTextSizeSp)));
     }
 
     private boolean isSupportingRowVisible() {
@@ -611,11 +919,11 @@ public class MaterialTextField extends EditText {
     }
 
     private float currentLabelTextSize() {
-        return getTextSize() + (sp(LABEL_FLOATED_SIZE_SP) - getTextSize()) * labelProgress;
+        return getTextSize() + (sp(labelTextSizeSp) - getTextSize()) * labelProgress;
     }
 
     private float currentLabelBaseline() {
-        measureFontMetrics(sp(LABEL_FLOATED_SIZE_SP));
+        measureFontMetrics(sp(labelTextSizeSp));
         float floated;
         if (textFieldStyle == TextFieldStyle.OUTLINED) {
             floated = resolveBoxTop() - (fontMetrics.ascent + fontMetrics.descent) / 2f;
@@ -665,42 +973,53 @@ public class MaterialTextField extends EditText {
     }
 
     private void refreshColors() {
-        int onSurface = dynamicColors.onSurface().getArgb(colorScheme);
+        int content = resolveContentColor();
         setTextColor(new ColorStateList(
                 new int[][]{{-android.R.attr.state_enabled}, new int[0]},
-                new int[]{applyAlpha(onSurface, DISABLED_TEXT_ALPHA), onSurface}));
+                new int[]{applyAlpha(content, DISABLED_TEXT_ALPHA), content}));
         setHintTextColor(Color.TRANSPARENT);
         setHighlightColor(applyAlpha(dynamicColors.primary().getArgb(colorScheme), SELECTION_ALPHA));
         invalidate();
     }
 
-    // ------------------------------------------------------------------ 触摸（尾部图标）
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (trailingIcon != null && trailingIconClickListener != null && isEnabled()) {
+        if (isEnabled() && hasIconClickListener()) {
             float x = event.getX();
             float y = event.getY();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (isInsideTrailingIconTouchArea(x, y)) {
-                        trailingIconPressed = true;
+                    boolean leadingDown = leadingIcon != null && leadingIconClickListener != null
+                            && isInsideIconTouchArea(x, y, true);
+                    boolean trailingDown = !leadingDown && trailingIcon != null && trailingIconClickListener != null
+                            && isInsideIconTouchArea(x, y, false);
+                    if (leadingDown || trailingDown) {
+                        leadingIconPressed = leadingDown;
+                        trailingIconPressed = trailingDown;
                         invalidate();
                         return true;
                     }
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (trailingIconPressed) {
+                    if (leadingIconPressed || trailingIconPressed) {
+                        boolean wasLeading = leadingIconPressed;
+                        boolean wasTrailing = trailingIconPressed;
+                        leadingIconPressed = false;
                         trailingIconPressed = false;
                         invalidate();
-                        if (isInsideTrailingIconTouchArea(x, y)) {
+                        if (wasLeading && leadingIconClickListener != null
+                                && isInsideIconTouchArea(x, y, true)) {
+                            leadingIconClickListener.onClick(this);
+                        } else if (wasTrailing && trailingIconClickListener != null
+                                && isInsideIconTouchArea(x, y, false)) {
                             trailingIconClickListener.onClick(this);
                         }
                         return true;
                     }
                     break;
                 case MotionEvent.ACTION_CANCEL:
-                    if (trailingIconPressed) {
+                    if (leadingIconPressed || trailingIconPressed) {
+                        leadingIconPressed = false;
                         trailingIconPressed = false;
                         invalidate();
                         return true;
@@ -713,15 +1032,29 @@ public class MaterialTextField extends EditText {
         return super.onTouchEvent(event);
     }
 
-    private boolean isInsideTrailingIconTouchArea(float x, float y) {
-        if (trailingIcon == null) {
+    private boolean hasIconClickListener() {
+        return (leadingIcon != null && leadingIconClickListener != null)
+                || (trailingIcon != null && trailingIconClickListener != null);
+    }
+
+    private boolean isInsideIconTouchArea(float x, float y, boolean leading) {
+        Drawable icon = leading ? leadingIcon : trailingIcon;
+        if (icon == null) {
             return false;
         }
         updateBoxRect();
         float iconSize = dp(ICON_SIZE_DP);
-        float centerX = isRtl()
-                ? dp(ICON_EDGE_PADDING_DP) + iconSize / 2f
-                : getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize / 2f;
+        boolean rtl = isRtl();
+        float centerX;
+        if (leading) {
+            centerX = rtl
+                    ? getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize / 2f
+                    : dp(ICON_EDGE_PADDING_DP) + iconSize / 2f;
+        } else {
+            centerX = rtl
+                    ? dp(ICON_EDGE_PADDING_DP) + iconSize / 2f
+                    : getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize / 2f;
+        }
         float centerY = boxRect.centerY();
         float half = Math.max(iconSize, dp(48.0f)) / 2f;
         return x >= centerX - half && x <= centerX + half
@@ -739,10 +1072,27 @@ public class MaterialTextField extends EditText {
     }
 
     private int resolveContainerColor() {
+        if (hasContainerColor) {
+            return containerColor;
+        }
         if (!isEnabled()) {
             return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_CONTAINER_ALPHA);
         }
         return dynamicColors.surfaceContainerHighest().getArgb(colorScheme);
+    }
+
+    private int resolveContentColor() {
+        if (hasContentColor) {
+            return contentColor;
+        }
+        return dynamicColors.onSurface().getArgb(colorScheme);
+    }
+
+    private int resolveErrorColor() {
+        if (hasErrorColor) {
+            return errorColor;
+        }
+        return dynamicColors.error().getArgb(colorScheme);
     }
 
     private int resolveIndicatorColor() {
@@ -750,12 +1100,25 @@ public class MaterialTextField extends EditText {
             return Color.TRANSPARENT;
         }
         if (isErrorEnabled()) {
-            return dynamicColors.error().getArgb(colorScheme);
+            return resolveErrorColor();
         }
         if (isFocused()) {
-            return dynamicColors.primary().getArgb(colorScheme);
+            return resolveFocusedIndicatorColor();
+        }
+        if (hasIndicatorColor) {
+            return indicatorColor;
         }
         return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    private int resolveFocusedIndicatorColor() {
+        if (hasFocusedIndicatorColor) {
+            return focusedIndicatorColor;
+        }
+        if (hasIndicatorColor) {
+            return indicatorColor;
+        }
+        return dynamicColors.primary().getArgb(colorScheme);
     }
 
     private int resolveOutlineColor() {
@@ -763,20 +1126,26 @@ public class MaterialTextField extends EditText {
             return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_OUTLINE_ALPHA);
         }
         if (isErrorEnabled()) {
-            return dynamicColors.error().getArgb(colorScheme);
+            return resolveErrorColor();
         }
         if (isFocused()) {
-            return dynamicColors.primary().getArgb(colorScheme);
+            return resolveFocusedIndicatorColor();
+        }
+        if (hasIndicatorColor) {
+            return indicatorColor;
         }
         return dynamicColors.outline().getArgb(colorScheme);
     }
 
     private int resolveLabelColor() {
+        if (hasLabelColor) {
+            return labelColor;
+        }
         if (!isEnabled()) {
             return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA);
         }
         if (isErrorEnabled()) {
-            return dynamicColors.error().getArgb(colorScheme);
+            return resolveErrorColor();
         }
         if (isFocused()) {
             return dynamicColors.primary().getArgb(colorScheme);
@@ -784,12 +1153,49 @@ public class MaterialTextField extends EditText {
         return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
     }
 
-    private int resolveSupportingTextColor() {
-        if (isErrorEnabled()) {
-            return dynamicColors.error().getArgb(colorScheme);
+    private int resolvePlaceholderColor() {
+        if (hasPlaceholderColor) {
+            return placeholderColor;
         }
         if (!isEnabled()) {
             return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA);
+        }
+        return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    private int resolveSupportingTextColor() {
+        if (isErrorEnabled()) {
+            return resolveErrorColor();
+        }
+        if (hasSupportingTextColor) {
+            return supportingTextColor;
+        }
+        if (!isEnabled()) {
+            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA);
+        }
+        return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    private int resolveLeadingIconColor() {
+        if (hasLeadingIconColor) {
+            return leadingIconColor;
+        }
+        return resolveDefaultIconColor();
+    }
+
+    private int resolveTrailingIconColor() {
+        if (hasTrailingIconColor) {
+            return trailingIconColor;
+        }
+        return resolveDefaultIconColor();
+    }
+
+    private int resolveDefaultIconColor() {
+        if (!isEnabled()) {
+            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_TEXT_ALPHA);
+        }
+        if (isErrorEnabled()) {
+            return resolveErrorColor();
         }
         return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
     }

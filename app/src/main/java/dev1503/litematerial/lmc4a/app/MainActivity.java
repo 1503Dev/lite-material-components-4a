@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
             "MaterialNavigationRail",
             "MaterialFloatingActionButton",
             "MaterialCardView",
+            "MaterialTopAppBar",
             "MaterialTextField",
     };
 
@@ -37,6 +38,7 @@ public class MainActivity extends Activity {
             dev1503.litematerial.lmc4a.app.demo.NavigationRailDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.FloatingActionButtonDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.CardViewDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.TopAppBarDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.TextFieldDemoActivity.class,
     };
 

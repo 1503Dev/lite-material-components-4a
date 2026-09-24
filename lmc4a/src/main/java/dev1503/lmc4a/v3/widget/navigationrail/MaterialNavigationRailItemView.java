@@ -13,7 +13,10 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -22,7 +25,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
 
-import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
@@ -46,13 +48,19 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private static final float ANIM_DAMPING = 0.7f;
     private static final float ANIM_DURATION_MS = 500f;
 
+    private static final int EMPTY_COLOR = -1;
+
     private DynamicScheme colorScheme = publicColorScheme;
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint containerPaint = new Paint();
 
     private NavigationRailLabelVisibilityMode labelVisibilityMode = NavigationRailLabelVisibilityMode.AUTO;
-    private Icon icon;
     private Drawable iconDrawable;
+    private float iconSizeDp = ICON_SIZE_DP;
+    private boolean hasIconSizeDp;
+    private float labelTextSizeSp = LABEL_TEXT_SIZE_SP;
+    private boolean hasLabelTextSizeSp;
     private MaterialNavigationRailItem data;
     private float checkProgress;
     private SpringSimulation checkSpring;
@@ -60,8 +68,22 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private long lastFrameTime;
     private RippleDrawable rippleDrawable;
     private Drawable rippleMask;
+    private ColorDrawable containerDrawable;
     private final Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF lastRippleRect = new RectF();
+
+    private int containerColor;
+    private boolean hasContainerColor;
+    private int indicatorColor;
+    private boolean hasIndicatorColor;
+    private int iconColor;
+    private boolean hasIconColor;
+    private int textColor;
+    private boolean hasTextColor;
+    private float indicatorWidthDp;
+    private boolean hasIndicatorWidthDp;
+    private float indicatorHeightDp;
+    private boolean hasIndicatorHeightDp;
 
     private boolean initialized;
 
@@ -85,13 +107,178 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     }
 
     public void setColorScheme(DynamicScheme colorScheme) {
-        this.colorScheme = colorScheme;
+        this.colorScheme = colorScheme == null ? publicColorScheme : colorScheme;
+        hasContainerColor = false;
+        hasIndicatorColor = false;
+        hasIconColor = false;
+        hasTextColor = false;
         updateRippleColor();
         invalidate();
     }
 
     public DynamicScheme getColorScheme() {
         return colorScheme;
+    }
+
+    public void setContainerColor(int containerColor) {
+        this.containerColor = containerColor;
+        this.hasContainerColor = true;
+        invalidate();
+    }
+
+    public int getContainerColor() {
+        return resolveContainerColor();
+    }
+
+    public void clearContainerColor() {
+        hasContainerColor = false;
+        invalidate();
+    }
+
+    public boolean hasContainerColor() {
+        return hasContainerColor;
+    }
+
+    public void setIndicatorColor(int indicatorColor) {
+        this.indicatorColor = indicatorColor;
+        this.hasIndicatorColor = true;
+        invalidate();
+    }
+
+    public int getIndicatorColor() {
+        return resolveIndicatorColor();
+    }
+
+    public void clearIndicatorColor() {
+        hasIndicatorColor = false;
+        invalidate();
+    }
+
+    public boolean hasIndicatorColor() {
+        return hasIndicatorColor;
+    }
+
+    public void setIconColor(int iconColor) {
+        this.iconColor = iconColor;
+        this.hasIconColor = true;
+        invalidate();
+    }
+
+    public int getIconColor() {
+        return hasIconColor ? iconColor : resolveForegroundColor();
+    }
+
+    public void clearIconColor() {
+        hasIconColor = false;
+        invalidate();
+    }
+
+    public boolean hasIconColor() {
+        return hasIconColor;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+        this.hasTextColor = true;
+        invalidate();
+    }
+
+    public int getTextColor() {
+        return hasTextColor ? textColor : resolveForegroundColor();
+    }
+
+    public void clearTextColor() {
+        hasTextColor = false;
+        invalidate();
+    }
+
+    public boolean hasTextColor() {
+        return hasTextColor;
+    }
+
+    public void setLabelTextSizeSp(float labelTextSizeSp) {
+        this.labelTextSizeSp = labelTextSizeSp;
+        this.hasLabelTextSizeSp = true;
+        invalidate();
+        refreshRippleMask();
+    }
+
+    public float getLabelTextSizeSp() {
+        return hasLabelTextSizeSp ? labelTextSizeSp : LABEL_TEXT_SIZE_SP;
+    }
+
+    public boolean hasLabelTextSizeSp() {
+        return hasLabelTextSizeSp;
+    }
+
+    public void clearLabelTextSizeSp() {
+        hasLabelTextSizeSp = false;
+        invalidate();
+        refreshRippleMask();
+    }
+
+    @Override
+    public void setTextSize(float size) {
+        super.setTextSize(size);
+        hasLabelTextSizeSp = false;
+        refreshRippleMask();
+    }
+
+    public void setIconSizeDp(float iconSizeDp) {
+        this.iconSizeDp = iconSizeDp;
+        this.hasIconSizeDp = true;
+        invalidate();
+    }
+
+    public float getIconSizeDp() {
+        return hasIconSizeDp ? iconSizeDp : ICON_SIZE_DP;
+    }
+
+    public boolean hasIconSizeDp() {
+        return hasIconSizeDp;
+    }
+
+    public void clearIconSizeDp() {
+        hasIconSizeDp = false;
+        invalidate();
+    }
+
+    public void setIndicatorWidthDp(float indicatorWidthDp) {
+        this.indicatorWidthDp = indicatorWidthDp;
+        this.hasIndicatorWidthDp = true;
+        invalidate();
+    }
+
+    public float getIndicatorWidthDp() {
+        return hasIndicatorWidthDp ? indicatorWidthDp : ICON_AREA_WIDTH_DP;
+    }
+
+    public boolean hasIndicatorWidthDp() {
+        return hasIndicatorWidthDp;
+    }
+
+    public void clearIndicatorWidthDp() {
+        hasIndicatorWidthDp = false;
+        invalidate();
+    }
+
+    public void setIndicatorHeightDp(float indicatorHeightDp) {
+        this.indicatorHeightDp = indicatorHeightDp;
+        this.hasIndicatorHeightDp = true;
+        invalidate();
+    }
+
+    public float getIndicatorHeightDp() {
+        return hasIndicatorHeightDp ? indicatorHeightDp : ICON_AREA_HEIGHT_DP;
+    }
+
+    public boolean hasIndicatorHeightDp() {
+        return hasIndicatorHeightDp;
+    }
+
+    public void clearIndicatorHeightDp() {
+        hasIndicatorHeightDp = false;
+        invalidate();
     }
 
     public void setLabelVisibilityMode(NavigationRailLabelVisibilityMode labelVisibilityMode) {
@@ -115,17 +302,16 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         refreshRippleMask();
     }
 
-    public void setIcon(Icon icon) {
-        this.icon = icon;
-        iconDrawable = icon == null ? null : icon.resolve(getContext());
+    public void setIcon(Drawable icon) {
+        iconDrawable = icon;
         if (iconDrawable != null) {
             iconDrawable = iconDrawable.mutate();
         }
         invalidate();
     }
 
-    public Icon getIcon() {
-        return icon;
+    public Drawable getIcon() {
+        return iconDrawable;
     }
 
     public void setItemData(MaterialNavigationRailItem data) {
@@ -134,6 +320,12 @@ public class MaterialNavigationRailItemView extends CompoundButton {
 
     public MaterialNavigationRailItem getItemData() {
         return data;
+    }
+
+    void applyColorScheme(DynamicScheme colorScheme) {
+        this.colorScheme = colorScheme == null ? publicColorScheme : colorScheme;
+        updateRippleColor();
+        invalidate();
     }
 
     @Override
@@ -168,28 +360,38 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     protected void onDraw(Canvas canvas) {
         refreshRippleMask();
 
+        int containerColor = resolveContainerColor();
         int indicatorColor = resolveIndicatorColor();
         int foregroundColor = resolveForegroundColor();
 
         RectF areaRect = computeIconAreaRect();
         float cornerRadius = areaRect.height() / 2f;
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                && Color.alpha(containerColor) > 0) {
+            containerPaint.setColor(containerColor);
+            canvas.drawRect(0f, 0f, getWidth(), getHeight(), containerPaint);
+        }
+
         float scale = Math.max(0f, checkProgress);
         if (scale > 0f && Color.alpha(indicatorColor) > 0) {
-            float w = areaRect.width() * scale;
+            float maxWidth = areaRect.width();
+            float indicatorWidth = Math.min(computeIndicatorWidth(), maxWidth) * scale;
+            float indicatorHeight = Math.min(computeIndicatorHeight(), areaRect.height());
+            float radius = indicatorHeight / 2f;
             RectF indicator = new RectF(
-                    areaRect.centerX() - w / 2f, areaRect.top,
-                    areaRect.centerX() + w / 2f, areaRect.bottom);
+                    areaRect.centerX() - indicatorWidth / 2f, areaRect.centerY() - indicatorHeight / 2f,
+                    areaRect.centerX() + indicatorWidth / 2f, areaRect.centerY() + indicatorHeight / 2f);
             paint.setColor(applyAlpha(indicatorColor, checkProgress));
-            canvas.drawRoundRect(indicator, cornerRadius * scale, cornerRadius * scale, paint);
+            canvas.drawRoundRect(indicator, radius, radius, paint);
         }
 
         if (iconDrawable != null) {
-            float iconSize = dp(ICON_SIZE_DP);
+            float iconSize = dp(computeIconSizeDp());
             int left = (int) (areaRect.centerX() - iconSize / 2f);
             int top = (int) (areaRect.centerY() - iconSize / 2f);
             iconDrawable.setBounds(left, top, (int) (left + iconSize + 0.5f), (int) (top + iconSize + 0.5f));
-            applyIconTint(iconDrawable, foregroundColor);
+            tintDrawable(iconDrawable, foregroundColor);
             iconDrawable.draw(canvas);
         }
 
@@ -229,7 +431,8 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             return;
         }
         RectF rect = computeIconAreaRect();
-        if (rect.equals(lastRippleRect)) {
+        if (rippleDrawable != null && rect.equals(lastRippleRect)) {
+            updateContainerColor();
             return;
         }
         lastRippleRect.set(rect);
@@ -237,11 +440,21 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             rippleMask = new PillMask();
             rippleDrawable = new RippleDrawable(
                     ColorStateList.valueOf(resolveRippleColor()), null, rippleMask);
-            setBackground(rippleDrawable);
+            containerDrawable = new ColorDrawable(resolveContainerColor());
+            LayerDrawable layerDrawable = new LayerDrawable(
+                    new Drawable[]{containerDrawable, rippleDrawable});
+            setBackground(layerDrawable);
         } else {
             rippleDrawable.setDrawableByLayerId(android.R.id.mask, rippleMask);
         }
+        updateContainerColor();
         updateRippleColor();
+    }
+
+    private void updateContainerColor() {
+        if (containerDrawable != null) {
+            containerDrawable.setColor(resolveContainerColor());
+        }
     }
 
     private int resolveRippleColor() {
@@ -261,7 +474,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         float areaWidth = dp(ICON_AREA_WIDTH_DP);
         float areaHeight = dp(ICON_AREA_HEIGHT_DP);
 
-        paint.setTextSize(sp(LABEL_TEXT_SIZE_SP));
+        paint.setTextSize(sp(computeLabelTextSizeSp()));
         paint.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         float labelHeight = paint.descent() - paint.ascent();
 
@@ -293,6 +506,123 @@ public class MaterialNavigationRailItemView extends CompoundButton {
                 return 1f;
             }
         }
+    }
+
+    private float computeIconSizeDp() {
+        return hasIconSizeDp ? iconSizeDp : ICON_SIZE_DP;
+    }
+
+    private float computeLabelTextSizeSp() {
+        return hasLabelTextSizeSp ? labelTextSizeSp : LABEL_TEXT_SIZE_SP;
+    }
+
+    private float computeIndicatorWidth() {
+        return hasIndicatorWidthDp ? dp(indicatorWidthDp) : dp(ICON_AREA_WIDTH_DP);
+    }
+
+    private float computeIndicatorHeight() {
+        return hasIndicatorHeightDp ? dp(indicatorHeightDp) : dp(ICON_AREA_HEIGHT_DP);
+    }
+
+    private int resolveContainerColor() {
+        if (hasContainerColor) {
+            return containerColor;
+        }
+        MaterialNavigationRail rail = getParentRail();
+        if (rail != null && rail.hasContainerColorOverride()) {
+            return rail.peekContainerColor();
+        }
+        return dynamicColors.surfaceContainer().getArgb(colorScheme);
+    }
+
+    private int resolveIndicatorColor() {
+        if (hasIndicatorColor) {
+            return indicatorColor;
+        }
+        MaterialNavigationRail rail = getParentRail();
+        if (rail != null && rail.hasIndicatorColorOverride()) {
+            return rail.peekIndicatorColor();
+        }
+        if (isChecked() && isEnabled()) {
+            return dynamicColors.secondaryContainer().getArgb(colorScheme);
+        }
+        if (isChecked()) {
+            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_INDICATOR_ALPHA);
+        }
+        return Color.TRANSPARENT;
+    }
+
+    private int resolveForegroundColor() {
+        if (!isEnabled()) {
+            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_ALPHA);
+        }
+        MaterialNavigationRail rail = getParentRail();
+        int iconColor = hasIconColor ? this.iconColor
+                : (rail != null && rail.hasIconColorOverride() ? rail.peekIconColor() : EMPTY_COLOR);
+        int textColor = hasTextColor ? this.textColor
+                : (rail != null && rail.hasTextColorOverride() ? rail.peekTextColor() : EMPTY_COLOR);
+        if (isChecked()) {
+            if (iconColor != EMPTY_COLOR) {
+                return iconColor;
+            }
+            if (textColor != EMPTY_COLOR) {
+                return textColor;
+            }
+        } else {
+            if (textColor != EMPTY_COLOR) {
+                return textColor;
+            }
+            if (iconColor != EMPTY_COLOR) {
+                return iconColor;
+            }
+        }
+        if (isChecked()) {
+            return dynamicColors.onSurface().getArgb(colorScheme);
+        }
+        return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    private MaterialNavigationRail getParentRail() {
+        View parent = (View) getParent();
+        return parent instanceof MaterialNavigationRail ? (MaterialNavigationRail) parent : null;
+    }
+
+    private void tintDrawable(Drawable drawable, int color) {
+        if (drawable instanceof BitmapDrawable) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable.setTint(color);
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    private int resolveDefault(int defaultSize, int measureSpec) {
+        int specSize = View.MeasureSpec.getSize(measureSpec);
+        switch (View.MeasureSpec.getMode(measureSpec)) {
+            case View.MeasureSpec.EXACTLY:
+                return specSize;
+            case View.MeasureSpec.AT_MOST:
+                return Math.min(defaultSize, specSize);
+            default:
+                return defaultSize;
+        }
+    }
+
+    private static int applyAlpha(int argb, float alphaFraction) {
+        int alpha = (int) (Color.alpha(argb) * Math.max(0f, Math.min(1f, alphaFraction)));
+        return (argb & 0x00ffffff) | (alpha << 24);
+    }
+
+    private float dp(float valueDp) {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, valueDp, getResources().getDisplayMetrics());
+    }
+
+    private float sp(float valueSp) {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, valueSp, getResources().getDisplayMetrics());
     }
 
     private final class PillMask extends Drawable {
@@ -371,66 +701,5 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             }
         });
         checkAnimator.start();
-    }
-
-    private int resolveIndicatorColor() {
-        if (isChecked() && isEnabled()) {
-            return dynamicColors.secondaryContainer().getArgb(colorScheme);
-        }
-        if (isChecked()) {
-            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_INDICATOR_ALPHA);
-        }
-        return Color.TRANSPARENT;
-    }
-
-    private int resolveForegroundColor() {
-        if (!isEnabled()) {
-            return applyAlpha(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_ALPHA);
-        }
-        if (isChecked()) {
-            return dynamicColors.onSurface().getArgb(colorScheme);
-        }
-        return dynamicColors.onSurfaceVariant().getArgb(colorScheme);
-    }
-
-    private void applyIconTint(Drawable drawable, int color) {
-        if (icon == null) {
-            return;
-        }
-        int type = icon.getType();
-        if (type == Icon.TYPE_RES_ID || type == Icon.TYPE_DRAWABLE) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                drawable.setTint(color);
-            } else {
-                drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            }
-        }
-    }
-
-    private int resolveDefault(int defaultSize, int measureSpec) {
-        int specSize = View.MeasureSpec.getSize(measureSpec);
-        switch (View.MeasureSpec.getMode(measureSpec)) {
-            case View.MeasureSpec.EXACTLY:
-                return specSize;
-            case View.MeasureSpec.AT_MOST:
-                return Math.min(defaultSize, specSize);
-            default:
-                return defaultSize;
-        }
-    }
-
-    private static int applyAlpha(int argb, float alphaFraction) {
-        int alpha = (int) (Color.alpha(argb) * Math.max(0f, Math.min(1f, alphaFraction)));
-        return (argb & 0x00ffffff) | (alpha << 24);
-    }
-
-    private float dp(float valueDp) {
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, valueDp, getResources().getDisplayMetrics());
-    }
-
-    private float sp(float valueSp) {
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, valueSp, getResources().getDisplayMetrics());
     }
 }

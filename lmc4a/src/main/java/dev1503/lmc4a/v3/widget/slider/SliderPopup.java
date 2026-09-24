@@ -15,6 +15,7 @@ class SliderPopup {
     private PopupWindow popupWindow;
     private int backgroundColor = Color.BLACK;
     private int textColor = Color.WHITE;
+    private float thumbRadiusDp = 10.0f;
     private int anchorScreenX;
     private int anchorScreenY;
     private int thumbOffsetY;
@@ -26,6 +27,14 @@ class SliderPopup {
 
     SliderPopup(android.content.Context context) {
         this.popupView = new SliderPopupView(context);
+    }
+
+    void setValueIndicatorColor(int color) {
+        setBackgroundColor(color);
+    }
+
+    void setThumbRadiusDp(float radiusDp) {
+        this.thumbRadiusDp = radiusDp;
     }
 
     void setBackgroundColor(int color) {
@@ -76,7 +85,7 @@ class SliderPopup {
         int popupHeight = popupView.getMeasuredHeight();
 
         int x = anchorScreenX + thumbCenterX - popupWidth / 2;
-        int thumbRadius = (int) (anchor.getResources().getDisplayMetrics().density * 10 + 0.5f);
+        int thumbRadius = (int) (anchor.getResources().getDisplayMetrics().density * thumbRadiusDp + 0.5f);
         int gap = (int) (anchor.getResources().getDisplayMetrics().density * 4 + 0.5f);
         int y = anchorScreenY + thumbOffsetY - thumbRadius - popupHeight - gap;
 
@@ -102,7 +111,7 @@ class SliderPopup {
         int popupHeight = popupView.getMeasuredHeight();
 
         int x = anchorScreenX + thumbCenterX - popupWidth / 2;
-        int thumbRadius = (int) (popupView.getResources().getDisplayMetrics().density * 10 + 0.5f);
+        int thumbRadius = (int) (popupView.getResources().getDisplayMetrics().density * thumbRadiusDp + 0.5f);
         int gap = (int) (popupView.getResources().getDisplayMetrics().density * 4 + 0.5f);
         int y = anchorScreenY + thumbOffsetY - thumbRadius - popupHeight - gap;
 

@@ -4,8 +4,10 @@ import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.view.View;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,6 +29,8 @@ import dev1503.lmc4a.v3.widget.button.MaterialButton;
 public class MaterialDialogBuilder extends AlertDialog.Builder {
 
     public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+
+    private static final float DEFAULT_CORNER_RADIUS_DP = 28.0f;
 
     private DynamicScheme colorScheme = publicColorScheme;
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
@@ -41,6 +46,13 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
     private View customView;
     private boolean cancelable = true;
 
+    private Drawable icon;
+    private Integer containerColorOverride;
+    private Integer titleColorOverride;
+    private Integer messageColorOverride;
+    private Integer buttonTextColorOverride;
+    private Float cornerRadiusDpOverride;
+
     private static final float IN_STIFFNESS = 600f;
     private static final float IN_DAMPING = 0.85f;
     private static final float OUT_STIFFNESS = 700f;
@@ -50,8 +62,114 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         super(context);
     }
 
-    public void setColorScheme(DynamicScheme colorScheme) {
+    public DynamicScheme getColorScheme() {
+        return colorScheme;
+    }
+
+    public MaterialDialogBuilder setColorScheme(DynamicScheme colorScheme) {
         this.colorScheme = colorScheme;
+        this.containerColorOverride = null;
+        this.titleColorOverride = null;
+        this.messageColorOverride = null;
+        this.buttonTextColorOverride = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setIcon(Drawable icon) {
+        this.icon = icon;
+        if (icon != null) {
+            icon.mutate();
+        }
+        return this;
+    }
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public MaterialDialogBuilder clearIcon() {
+        this.icon = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setContainerColor(int color) {
+        this.containerColorOverride = color;
+        return this;
+    }
+
+    public int getContainerColor() {
+        return containerColorOverride != null
+                ? containerColorOverride
+                : dynamicColors.surfaceContainerHigh().getArgb(colorScheme);
+    }
+
+    public MaterialDialogBuilder clearContainerColor() {
+        this.containerColorOverride = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setTitleColor(int color) {
+        this.titleColorOverride = color;
+        return this;
+    }
+
+    public int getTitleColor() {
+        return titleColorOverride != null
+                ? titleColorOverride
+                : dynamicColors.onSurface().getArgb(colorScheme);
+    }
+
+    public MaterialDialogBuilder clearTitleColor() {
+        this.titleColorOverride = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setMessageColor(int color) {
+        this.messageColorOverride = color;
+        return this;
+    }
+
+    public int getMessageColor() {
+        return messageColorOverride != null
+                ? messageColorOverride
+                : dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    public MaterialDialogBuilder clearMessageColor() {
+        this.messageColorOverride = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setCornerRadiusDp(float cornerRadiusDp) {
+        this.cornerRadiusDpOverride = Math.max(0f, cornerRadiusDp);
+        return this;
+    }
+
+    public float getCornerRadiusDp() {
+        return cornerRadiusDpOverride != null
+                ? cornerRadiusDpOverride
+                : DEFAULT_CORNER_RADIUS_DP;
+    }
+
+    public MaterialDialogBuilder clearCornerRadiusDp() {
+        this.cornerRadiusDpOverride = null;
+        return this;
+    }
+
+    public MaterialDialogBuilder setButtonTextColor(int color) {
+        this.buttonTextColorOverride = color;
+        return this;
+    }
+
+    public int getButtonTextColor() {
+        return buttonTextColorOverride != null
+                ? buttonTextColorOverride
+                : dynamicColors.primary().getArgb(colorScheme);
+    }
+
+    public MaterialDialogBuilder clearButtonTextColor() {
+        this.buttonTextColorOverride = null;
+        return this;
     }
 
     @Override
@@ -144,10 +262,9 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
 
     @Override
     public AlertDialog create() {
-        int bgColor = dynamicColors.surfaceContainerHigh().getArgb(colorScheme);
-        int onSurfaceColor = dynamicColors.onSurface().getArgb(colorScheme);
-        int primaryColor = dynamicColors.primary().getArgb(colorScheme);
-        int surfaceVariantColor = dynamicColors.surfaceVariant().getArgb(colorScheme);
+        int bgColor = getContainerColor();
+        int titleColor = getTitleColor();
+        int messageColor = getMessageColor();
 
         LinearLayout container = new LinearLayout(getContext());
         container.setOrientation(LinearLayout.VERTICAL);
@@ -155,14 +272,14 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(bgColor);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            bg.setCornerRadius(dp(28));
+            bg.setCornerRadius(dp(getCornerRadiusDp()));
         }
         container.setBackground(bg);
 
         if (titleText != null) {
             TextView titleView = new TextView(getContext());
             titleView.setText(titleText);
-            titleView.setTextColor(onSurfaceColor);
+            titleView.setTextColor(titleColor);
             titleView.setTextSize(24);
             LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -176,8 +293,7 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         if (messageText != null) {
             TextView messageView = new TextView(getContext());
             messageView.setText(messageText);
-            messageView.setTextColor(
-                    dynamicColors.onSurfaceVariant().getArgb(colorScheme));
+            messageView.setTextColor(messageColor);
             messageView.setTextSize(14);
             LinearLayout.LayoutParams msgParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -227,6 +343,10 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         wrapper.addView(container, wrapperParams);
 
         builder.setView(wrapper);
+
+        if (icon != null) {
+            builder.setIcon(icon);
+        }
 
         if (!cancelable) {
             builder.setCancelable(false);
@@ -283,7 +403,10 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         MaterialButton btn = new MaterialButton(getContext());
         btn.setText(text);
         btn.setTextSize(14);
-        btn.setButtonStyle(ButtonStyle.TEXT);
+        btn.setStyle(ButtonStyle.TEXT);
+        if (buttonTextColorOverride != null) {
+            btn.setTextColor(buttonTextColorOverride);
+        }
         return btn;
     }
 

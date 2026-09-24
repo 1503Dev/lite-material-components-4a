@@ -39,7 +39,7 @@ public class MaterialBottomSheet extends Dialog {
 
     public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
 
-    private static final float CORNER_RADIUS_DP = 28.0f;
+    private static final float DEFAULT_CORNER_RADIUS_DP = 28.0f;
     private static final float MAX_WIDTH_DP = 720.0f;
     private static final float HANDLE_WIDTH_DP = 32.0f;
     private static final float HANDLE_HEIGHT_DP = 4.0f;
@@ -62,10 +62,13 @@ public class MaterialBottomSheet extends Dialog {
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
     private final FrameLayout container;
     private final SheetContainer sheetPanel;
+    private View scrimView;
     private GradientDrawable backgroundDrawable;
     private View contentView;
     private boolean dismissed;
     private boolean fullscreenMode;
+    private boolean dragEnabled = true;
+    private boolean hideable = true;
     private SheetState sheetState = SheetState.COLLAPSED;
     private int touchSlop;
     private int peekHeight = PEEK_HEIGHT_AUTO;
@@ -77,6 +80,9 @@ public class MaterialBottomSheet extends Dialog {
     private long lastEventTime;
     private OnStateChangedListener onStateChangedListener;
     private boolean animatedIn;
+    private Integer containerColorOverride;
+    private Integer scrimColorOverride;
+    private Float cornerRadiusDpOverride;
 
     public MaterialBottomSheet(Context context) {
         this(context, null);
@@ -123,7 +129,7 @@ public class MaterialBottomSheet extends Dialog {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     updateVelocity(ev);
-                    if (Math.abs(ev.getRawY() - downRawY) > touchSlop) {
+                    if (dragEnabled && Math.abs(ev.getRawY() - downRawY) > touchSlop) {
                         beginDrag();
                         return true;
                     }
@@ -139,7 +145,8 @@ public class MaterialBottomSheet extends Dialog {
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     updateVelocity(ev);
-                    if (!dragging && Math.abs(ev.getRawY() - downRawY) > touchSlop) {
+                    if (dragEnabled && !dragging
+                            && Math.abs(ev.getRawY() - downRawY) > touchSlop) {
                         beginDrag();
                     }
                     if (dragging) {
@@ -194,21 +201,14 @@ public class MaterialBottomSheet extends Dialog {
     }
 
     private void init() {
-        int bgColor = dynamicColors.surfaceContainerHigh().getArgb(colorScheme);
-        int onSurfaceVariantColor = dynamicColors.onSurfaceVariant().getArgb(colorScheme);
-
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(bgColor);
         backgroundDrawable = bg;
-        bg.setCornerRadii(new float[]{
-                dp(CORNER_RADIUS_DP), dp(CORNER_RADIUS_DP),
-                dp(CORNER_RADIUS_DP), dp(CORNER_RADIUS_DP),
-                0, 0, 0, 0});
         sheetPanel.setBackground(bg);
 
         View dragHandle = new View(getContext());
         GradientDrawable handleBg = new GradientDrawable();
-        handleBg.setColor(applyAlphaFraction(onSurfaceVariantColor, HANDLE_ALPHA));
+        handleBg.setColor(applyAlphaFraction(
+                dynamicColors.onSurfaceVariant().getArgb(colorScheme), HANDLE_ALPHA));
         handleBg.setCornerRadius(dp(HANDLE_HEIGHT_DP / 2.0f));
         dragHandle.setBackground(handleBg);
         dragHandle.setClickable(true);
@@ -224,18 +224,20 @@ public class MaterialBottomSheet extends Dialog {
         handleParams.topMargin = dp(HANDLE_TOP_MARGIN_DP);
         sheetPanel.addView(dragHandle, handleParams);
 
+        scrimView = new View(getContext());
+        scrimView.setBackgroundColor(Color.TRANSPARENT);
+        scrimView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hide();
+            }
+        });
+        container.addView(scrimView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
         if (contentView != null) {
             addContent(contentView);
         }
-
-        // 遮罩改由窗口自身的调光实现（FLAG_DIM_BEHIND），容器只负责把面板之外的
-        // 点击视为“点击遮罩”并关闭
-        container.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
 
         FrameLayout.LayoutParams panelParams = new FrameLayout.LayoutParams(
                 Math.min(getContext().getResources().getDisplayMetrics().widthPixels,
@@ -245,13 +247,9 @@ public class MaterialBottomSheet extends Dialog {
         container.addView(sheetPanel, panelParams);
 
         setContentView(container);
+        refreshBackgroundColors();
     }
 
-    /**
-     * 面板高度：非 fitToContents 时占满整个 sheet（默认半屏、全屏模式为屏幕高度减去顶部
-     * 偏移），这样 收起/半展开/展开 之间才有真实位移，拖动也才有可拖动的余量；
-     * fitToContents 时面板贴合内容高度。
-     */
     private void updatePanelHeight() {
         ViewGroup.LayoutParams params = sheetPanel.getLayoutParams();
         if (params == null) {
@@ -287,10 +285,13 @@ public class MaterialBottomSheet extends Dialog {
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT);
         WindowManager.LayoutParams params = window.getAttributes();
-        // 遮罩直接用系统 Dialog 的默认黑色调光：FLAG_DIM_BEHIND + 主题里的
-        // backgroundDimAmount，不再自绘遮罩视图，也不再自定义调光值
-        params.dimAmount = resolveDimAmount();
-        params.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        if (scrimColorOverride == null) {
+            params.dimAmount = resolveDimAmount();
+            params.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        } else {
+            params.dimAmount = 0f;
+            params.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        }
         window.setAttributes(params);
         applyEdgeToEdge(window);
     }
@@ -343,6 +344,126 @@ public class MaterialBottomSheet extends Dialog {
             }
             return insets.consumeSystemWindowInsets();
         }
+    }
+
+    public DynamicScheme getColorScheme() {
+        return colorScheme;
+    }
+
+    public void setColorScheme(DynamicScheme colorScheme) {
+        this.colorScheme = colorScheme;
+        this.containerColorOverride = null;
+        this.scrimColorOverride = null;
+        this.cornerRadiusDpOverride = null;
+        refreshBackgroundColors();
+        applyWindowLayout();
+    }
+
+    public void clearContainerColor() {
+        containerColorOverride = null;
+        refreshBackgroundColors();
+    }
+
+    public void hide() {
+        if (dismissed) {
+            return;
+        }
+        dismissed = true;
+        if (!isShowing()) {
+            super.dismiss();
+            return;
+        }
+        final float startOffset = sheetPanel.getTranslationY();
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration((long) OUT_DURATION_MS);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float t = animation.getAnimatedFraction();
+                float easedT = t * t;
+                sheetPanel.setTranslationY(startOffset
+                        + (sheetHeight() - startOffset) * easedT);
+                sheetPanel.setAlpha(1f - easedT);
+            }
+        });
+        animator.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                MaterialBottomSheet.super.dismiss();
+            }
+        });
+        animator.start();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (hideable) {
+            super.onBackPressed();
+        }
+    }
+
+    public void setContainerColor(int color) {
+        containerColorOverride = color;
+        refreshBackgroundColors();
+    }
+
+    public int getContainerColor() {
+        return containerColorOverride != null
+                ? containerColorOverride
+                : dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+    }
+
+    public void setScrimColor(int color) {
+        scrimColorOverride = color;
+        refreshBackgroundColors();
+        applyWindowLayout();
+    }
+
+    public int getScrimColor() {
+        if (scrimColorOverride != null) {
+            return scrimColorOverride;
+        }
+        return applyAlphaFraction(
+                dynamicColors.scrim().getArgb(colorScheme), resolveDimAmount());
+    }
+
+    public void clearScrimColor() {
+        scrimColorOverride = null;
+        refreshBackgroundColors();
+        applyWindowLayout();
+    }
+
+    public void setCornerRadiusDp(float cornerRadiusDp) {
+        cornerRadiusDpOverride = Math.max(0f, cornerRadiusDp);
+        refreshBackgroundColors();
+    }
+
+    public float getCornerRadiusDp() {
+        return cornerRadiusDpOverride != null
+                ? cornerRadiusDpOverride
+                : DEFAULT_CORNER_RADIUS_DP;
+    }
+
+    public void clearCornerRadiusDp() {
+        cornerRadiusDpOverride = null;
+        refreshBackgroundColors();
+    }
+
+    public void setDragEnabled(boolean dragEnabled) {
+        this.dragEnabled = dragEnabled;
+    }
+
+    public boolean isDragEnabled() {
+        return dragEnabled;
+    }
+
+    public void setHideable(boolean hideable) {
+        this.hideable = hideable;
+        setCancelable(hideable);
+    }
+
+    public boolean isHideable() {
+        return hideable;
     }
 
     public boolean isFullscreenMode() {
@@ -430,10 +551,6 @@ public class MaterialBottomSheet extends Dialog {
         }
     }
 
-    /**
-     * 面板真实高度。面板在容器中底部对齐，因此所有位移都必须以它为基准：
-     * 原先用屏幕高度推算位移，内容比半屏短的面板会被整体平移到屏幕下方而看不见。
-     */
     private int sheetHeight() {
         int height = sheetPanel.getHeight();
         if (height > 0) {
@@ -471,18 +588,32 @@ public class MaterialBottomSheet extends Dialog {
         return (int) (sheetHeight() - sheetPanel.getTranslationY());
     }
 
+    private void refreshBackgroundColors() {
+        if (backgroundDrawable != null) {
+            backgroundDrawable.setColor(resolveContainerColor());
+            updateCornerRadiusForOffset(currentOffset());
+        }
+        if (scrimView != null) {
+            scrimView.setBackgroundColor(scrimColorOverride != null
+                    ? scrimColorOverride : Color.TRANSPARENT);
+        }
+    }
+
+    private int resolveContainerColor() {
+        if (containerColorOverride != null) {
+            return containerColorOverride;
+        }
+        return dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+    }
+
     private void updateCornerRadiusForOffset(int offset) {
         if (backgroundDrawable == null) {
             return;
         }
-        // 圆角随展开收起成直角只在全屏模式下发生：那时 sheet 顶边会贴到窗口顶部。
-        // 非全屏模式（半屏 sheet）以及贴合内容的小 sheet 无论 收起/半展开/展开 都保持圆角。
         int full = sheetHeight();
         int visible = Math.max(0, Math.min(full, full - offset));
         float progress = 0f;
         if (fullscreenMode) {
-            // 用 收起(peek)/展开 两个锚点的可见高度插值，避免位移还在 sheet 高度附近时
-            // 被误判成“已完全展开”而把刚打开时的圆角算成直角
             int peek = targetHeightFor(SheetState.COLLAPSED);
             int expanded = targetHeightFor(SheetState.EXPANDED);
             if (expanded > peek) {
@@ -490,7 +621,7 @@ public class MaterialBottomSheet extends Dialog {
             }
         }
         progress = Math.max(0f, Math.min(1f, progress));
-        float top = dp(CORNER_RADIUS_DP) * (1f - progress);
+        float top = dp(getCornerRadiusDp()) * (1f - progress);
         backgroundDrawable.setCornerRadii(new float[]{
                 top, top,
                 top, top,
@@ -532,10 +663,6 @@ public class MaterialBottomSheet extends Dialog {
         updatePanelHeight();
         Window window = getWindow();
         if (window != null) {
-            // 先安装 decor（主题里的窗口默认值会在这一步写入 attrs），再覆盖窗口面格式，
-            // 这样 super.show() 创建窗口面时才会带上 alpha 通道。API 16 上这一步不能省：
-            // 否则图层被标记为不透明，调光遮罩会渲染成纯黑，身后的 Activity 也会被
-            // 系统当作完全遮挡而停止绘制。
             window.getDecorView();
             window.setFormat(PixelFormat.TRANSLUCENT);
         }
@@ -544,42 +671,10 @@ public class MaterialBottomSheet extends Dialog {
         animateIn();
     }
 
-    @Override
-    public void dismiss() {
-        if (dismissed) {
-            return;
-        }
-        dismissed = true;
-        if (!isShowing()) {
-            super.dismiss();
-            return;
-        }
-        final float startOffset = sheetPanel.getTranslationY();
-        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
-        animator.setDuration((long) OUT_DURATION_MS);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float t = animation.getAnimatedFraction();
-                float easedT = t * t;
-                sheetPanel.setTranslationY(startOffset
-                        + (sheetHeight() - startOffset) * easedT);
-                sheetPanel.setAlpha(1f - easedT);
-            }
-        });
-        animator.addListener(new android.animation.AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(android.animation.Animator animation) {
-                MaterialBottomSheet.super.dismiss();
-            }
-        });
-        animator.start();
-    }
-
     private void settleDrag(int height, boolean allowDismiss) {
         int collapsedHeight = targetHeightFor(SheetState.COLLAPSED);
-        if (allowDismiss && height <= (int) (collapsedHeight * 0.55f)) {
-            dismiss();
+        if (allowDismiss && hideable && height <= (int) (collapsedHeight * 0.55f)) {
+            hide();
             return;
         }
         SheetState target = nearestAnchorState(height, lastVelocityY);
@@ -675,7 +770,6 @@ public class MaterialBottomSheet extends Dialog {
 
     private int expandedHeight() {
         if (fullscreenMode) {
-            // 全屏展开时让出状态栏高度，避免顶部手柄落在状态栏窗口下面
             return parentHeight() - expandedOffset - topInset;
         }
         return (int) (parentHeight() * 0.5f);
@@ -704,7 +798,6 @@ public class MaterialBottomSheet extends Dialog {
         }
         sheetPanel.setAlpha(0f);
         sheetPanel.setTranslationY(parentHeight());
-        // 先把收起锚点的圆角摆好，弹出过程中顶角就不会出现直角
         updateCornerRadiusForOffset(offsetForState(SheetState.COLLAPSED));
 
         ViewTreeObserver.OnGlobalLayoutListener layoutListener =
@@ -720,13 +813,11 @@ public class MaterialBottomSheet extends Dialog {
                         } else {
                             observer.removeGlobalOnLayoutListener(this);
                         }
-                        // 面板此时已完成测量，收起位移按它的真实高度计算
                         final int startOffset = sheetHeight();
                         final int targetOffset = offsetForState(SheetState.COLLAPSED);
                         sheetPanel.setTranslationY(startOffset);
                         updateCornerRadiusForOffset(startOffset);
 
-                        // 弹出动画用弹簧模拟驱动位移，透明度按弹簧进度插值
                         final SpringSimulation spring = new SpringSimulation(
                                 SHEET_SPRING_STIFFNESS, SHEET_SPRING_DAMPING);
                         spring.setPosition(startOffset);

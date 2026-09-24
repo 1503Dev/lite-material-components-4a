@@ -11,7 +11,6 @@ import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
@@ -20,7 +19,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.ViewTreeObserver;
-import android.widget.ScrollView;
 
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.widget.ColorVariant;
@@ -60,7 +58,7 @@ public class MaterialFloatingActionButton extends MaterialButton {
     private long lastFrameTime;
     private float scale = 1f;
     private float scaleTarget = 1f;
-    private ScrollView boundScrollView;
+    private View boundScrollable;
     private ViewTreeObserver.OnScrollChangedListener scrollChangedListener;
     private int lastScrollY;
 
@@ -111,43 +109,39 @@ public class MaterialFloatingActionButton extends MaterialButton {
         animateScale(0f);
     }
 
-    public void bindTo(ScrollView scrollView) {
-        if (scrollView == null) {
+    public void bindTo(View scrollable) {
+        if (scrollable == null) {
             return;
         }
-        unbindTo();
-        boundScrollView = scrollView;
+        unbind();
+        boundScrollable = scrollable;
         lastScrollY = 0;
         scrollChangedListener = new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-                if (boundScrollView != null) {
-                    handleScroll(boundScrollView.getScrollY());
+                if (boundScrollable != null) {
+                    handleScroll(boundScrollable.getScrollY());
                 }
             }
         };
-        boundScrollView.getViewTreeObserver().addOnScrollChangedListener(scrollChangedListener);
-        handleScroll(boundScrollView.getScrollY());
+        boundScrollable.getViewTreeObserver().addOnScrollChangedListener(scrollChangedListener);
+        handleScroll(boundScrollable.getScrollY());
     }
 
-    public void unbindTo() {
-        if (boundScrollView != null) {
-            ViewTreeObserver observer = boundScrollView.getViewTreeObserver();
+    public void unbind() {
+        if (boundScrollable != null) {
+            ViewTreeObserver observer = boundScrollable.getViewTreeObserver();
             if (observer.isAlive() && scrollChangedListener != null) {
                 observer.removeOnScrollChangedListener(scrollChangedListener);
             }
         }
-        boundScrollView = null;
+        boundScrollable = null;
         scrollChangedListener = null;
         lastScrollY = 0;
     }
 
     public boolean isBound() {
-        return boundScrollView != null;
-    }
-
-    public void unbindTo(ScrollView scrollView) {
-        unbindTo();
+        return boundScrollable != null;
     }
 
     private void handleScroll(int scrollY) {
@@ -288,7 +282,8 @@ public class MaterialFloatingActionButton extends MaterialButton {
         }
     }
 
-    private float resolveIconSizeDp() {
+    @Override
+    protected float resolveDefaultIconSizeDp() {
         switch (size) {
             case MEDIUM:
                 return MEDIUM_ICON_SIZE_DP;
@@ -339,6 +334,11 @@ public class MaterialFloatingActionButton extends MaterialButton {
     }
 
     @Override
+    protected float resolveDefaultElevationDp() {
+        return ELEVATION_DP;
+    }
+
+    @Override
     protected void applyRippleBackground() {
         contentDrawable.setCornerRadius(cornerRadius);
         contentDrawable.setColor(resolveContainerColors());
@@ -352,14 +352,6 @@ public class MaterialFloatingActionButton extends MaterialButton {
         LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{rippleDrawable});
         layerDrawable.setLayerInset(0, 0, 0, 0, 0);
         setBackground(layerDrawable);
-    }
-
-    @Override
-    protected void refreshColorScheme() {
-        super.refreshColorScheme();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setElevation(dp(ELEVATION_DP));
-        }
     }
 
     @Override
