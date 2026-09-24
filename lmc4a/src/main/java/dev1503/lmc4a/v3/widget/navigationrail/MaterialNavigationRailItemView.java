@@ -14,7 +14,9 @@ import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -66,6 +68,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private long lastFrameTime;
     private RippleDrawable rippleDrawable;
     private Drawable rippleMask;
+    private ColorDrawable containerDrawable;
     private final Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF lastRippleRect = new RectF();
 
@@ -364,7 +367,8 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         RectF areaRect = computeIconAreaRect();
         float cornerRadius = areaRect.height() / 2f;
 
-        if (Color.alpha(containerColor) > 0) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                && Color.alpha(containerColor) > 0) {
             containerPaint.setColor(containerColor);
             canvas.drawRect(0f, 0f, getWidth(), getHeight(), containerPaint);
         }
@@ -427,7 +431,8 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             return;
         }
         RectF rect = computeIconAreaRect();
-        if (rect.equals(lastRippleRect)) {
+        if (rippleDrawable != null && rect.equals(lastRippleRect)) {
+            updateContainerColor();
             return;
         }
         lastRippleRect.set(rect);
@@ -435,11 +440,21 @@ public class MaterialNavigationRailItemView extends CompoundButton {
             rippleMask = new PillMask();
             rippleDrawable = new RippleDrawable(
                     ColorStateList.valueOf(resolveRippleColor()), null, rippleMask);
-            setBackground(rippleDrawable);
+            containerDrawable = new ColorDrawable(resolveContainerColor());
+            LayerDrawable layerDrawable = new LayerDrawable(
+                    new Drawable[]{containerDrawable, rippleDrawable});
+            setBackground(layerDrawable);
         } else {
             rippleDrawable.setDrawableByLayerId(android.R.id.mask, rippleMask);
         }
+        updateContainerColor();
         updateRippleColor();
+    }
+
+    private void updateContainerColor() {
+        if (containerDrawable != null) {
+            containerDrawable.setColor(resolveContainerColor());
+        }
     }
 
     private int resolveRippleColor() {
