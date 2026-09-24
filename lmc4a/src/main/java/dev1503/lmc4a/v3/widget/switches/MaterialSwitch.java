@@ -6,7 +6,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -33,16 +35,17 @@ public class MaterialSwitch extends CompoundButton {
     private static final float PRESS_DURATION_MS = 66.67f;
     private static final float DISABLED_TRACK_ALPHA = 0.12f;
     private static final float DISABLED_HANDLE_ALPHA = 0.38f;
+    private static final float ICON_SIZE_DP = 16.0f;
 
     private DynamicScheme colorScheme = publicColorScheme;
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rectF = new RectF();
-    private final float trackWidth;
-    private final float trackHeight;
-    private final float trackRadius;
-    private final float minViewWidth;
-    private final float minViewHeight;
+    private float trackWidth;
+    private float trackHeight;
+    private float trackRadius;
+    private float minViewWidth;
+    private float minViewHeight;
     private float handleProgress;
     private float pressProgress;
     private int currentTrackColor;
@@ -50,6 +53,26 @@ public class MaterialSwitch extends CompoundButton {
     private ValueAnimator handleAnimator;
     private ValueAnimator pressAnimator;
     private ValueAnimator colorAnimator;
+
+    private boolean hasThumbColor;
+    private boolean hasUnselectedThumbColor;
+    private boolean hasTrackColor;
+    private boolean hasUnselectedTrackColor;
+    private boolean hasTrackOutlineColor;
+    private boolean hasIconColor;
+    private boolean hasTrackWidthDp;
+    private boolean hasTrackHeightDp;
+    private boolean hasThumbRadiusDp;
+    private int thumbColor;
+    private int unselectedThumbColor;
+    private int trackColor;
+    private int unselectedTrackColor;
+    private int trackOutlineColor;
+    private int iconColor;
+    private float trackWidthDp;
+    private float trackHeightDp;
+    private float thumbRadiusDp;
+    private Drawable icon;
 
     public MaterialSwitch(Context context) {
         this(context, null);
@@ -78,12 +101,243 @@ public class MaterialSwitch extends CompoundButton {
 
     public void setColorScheme(DynamicScheme colorScheme) {
         this.colorScheme = colorScheme;
+        hasThumbColor = false;
+        hasUnselectedThumbColor = false;
+        hasTrackColor = false;
+        hasUnselectedTrackColor = false;
+        hasTrackOutlineColor = false;
+        hasIconColor = false;
+        hasTrackWidthDp = false;
+        hasTrackHeightDp = false;
+        hasThumbRadiusDp = false;
+        trackWidth = dp(TRACK_WIDTH_DP);
+        trackHeight = dp(TRACK_HEIGHT_DP);
+        updateTrackMetrics();
         setTextColor(resolveTextColor());
+        if (colorAnimator != null) {
+            colorAnimator.cancel();
+            colorAnimator = null;
+        }
+        currentTrackColor = resolveTrackColor();
+        currentHandleColor = resolveHandleColor();
+        requestLayout();
         invalidate();
     }
 
     public DynamicScheme getColorScheme() {
         return colorScheme;
+    }
+
+    public void setThumbColor(int thumbColor) {
+        this.thumbColor = thumbColor;
+        this.hasThumbColor = true;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public int getThumbColor() {
+        return hasThumbColor ? thumbColor : dynamicColors.onPrimary().getArgb(colorScheme);
+    }
+
+    public boolean hasThumbColor() {
+        return hasThumbColor;
+    }
+
+    public void clearThumbColor() {
+        hasThumbColor = false;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public void setUnselectedThumbColor(int unselectedThumbColor) {
+        this.unselectedThumbColor = unselectedThumbColor;
+        this.hasUnselectedThumbColor = true;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public int getUnselectedThumbColor() {
+        return hasUnselectedThumbColor
+                ? unselectedThumbColor
+                : dynamicColors.outline().getArgb(colorScheme);
+    }
+
+    public boolean hasUnselectedThumbColor() {
+        return hasUnselectedThumbColor;
+    }
+
+    public void clearUnselectedThumbColor() {
+        hasUnselectedThumbColor = false;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public void setTrackColor(int trackColor) {
+        this.trackColor = trackColor;
+        this.hasTrackColor = true;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public int getTrackColor() {
+        return hasTrackColor ? trackColor : dynamicColors.primary().getArgb(colorScheme);
+    }
+
+    public boolean hasTrackColor() {
+        return hasTrackColor;
+    }
+
+    public void clearTrackColor() {
+        hasTrackColor = false;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public void setUnselectedTrackColor(int unselectedTrackColor) {
+        this.unselectedTrackColor = unselectedTrackColor;
+        this.hasUnselectedTrackColor = true;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public int getUnselectedTrackColor() {
+        return hasUnselectedTrackColor
+                ? unselectedTrackColor
+                : dynamicColors.surfaceContainerHighest().getArgb(colorScheme);
+    }
+
+    public boolean hasUnselectedTrackColor() {
+        return hasUnselectedTrackColor;
+    }
+
+    public void clearUnselectedTrackColor() {
+        hasUnselectedTrackColor = false;
+        animateColorTransition(currentTrackColor, currentHandleColor);
+    }
+
+    public void setTrackOutlineColor(int trackOutlineColor) {
+        this.trackOutlineColor = trackOutlineColor;
+        this.hasTrackOutlineColor = true;
+        invalidate();
+    }
+
+    public int getTrackOutlineColor() {
+        return hasTrackOutlineColor
+                ? trackOutlineColor
+                : dynamicColors.outline().getArgb(colorScheme);
+    }
+
+    public boolean hasTrackOutlineColor() {
+        return hasTrackOutlineColor;
+    }
+
+    public void clearTrackOutlineColor() {
+        hasTrackOutlineColor = false;
+        invalidate();
+    }
+
+    public void setIcon(Drawable icon) {
+        this.icon = icon;
+        invalidate();
+    }
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public boolean hasIcon() {
+        return icon != null;
+    }
+
+    public void clearIcon() {
+        this.icon = null;
+        invalidate();
+    }
+
+    public void setIconColor(int iconColor) {
+        this.iconColor = iconColor;
+        this.hasIconColor = true;
+        invalidate();
+    }
+
+    public int getIconColor() {
+        return hasIconColor
+                ? iconColor
+                : dynamicColors.onPrimaryContainer().getArgb(colorScheme);
+    }
+
+    public boolean hasIconColor() {
+        return hasIconColor;
+    }
+
+    public void clearIconColor() {
+        hasIconColor = false;
+        invalidate();
+    }
+
+    public void setTrackWidthDp(float trackWidthDp) {
+        this.trackWidthDp = trackWidthDp;
+        this.hasTrackWidthDp = true;
+        trackWidth = dp(trackWidthDp);
+        updateTrackMetrics();
+        requestLayout();
+        invalidate();
+    }
+
+    public float getTrackWidthDp() {
+        return trackWidth / getResources().getDisplayMetrics().density;
+    }
+
+    public boolean hasTrackWidthDp() {
+        return hasTrackWidthDp;
+    }
+
+    public void clearTrackWidthDp() {
+        hasTrackWidthDp = false;
+        trackWidth = dp(TRACK_WIDTH_DP);
+        updateTrackMetrics();
+        requestLayout();
+        invalidate();
+    }
+
+    public void setTrackHeightDp(float trackHeightDp) {
+        this.trackHeightDp = trackHeightDp;
+        this.hasTrackHeightDp = true;
+        trackHeight = dp(trackHeightDp);
+        updateTrackMetrics();
+        requestLayout();
+        invalidate();
+    }
+
+    public float getTrackHeightDp() {
+        return trackHeight / getResources().getDisplayMetrics().density;
+    }
+
+    public boolean hasTrackHeightDp() {
+        return hasTrackHeightDp;
+    }
+
+    public void clearTrackHeightDp() {
+        hasTrackHeightDp = false;
+        trackHeight = dp(TRACK_HEIGHT_DP);
+        updateTrackMetrics();
+        requestLayout();
+        invalidate();
+    }
+
+    public void setThumbRadiusDp(float thumbRadiusDp) {
+        this.thumbRadiusDp = thumbRadiusDp;
+        this.hasThumbRadiusDp = true;
+        invalidate();
+    }
+
+    public float getThumbRadiusDp() {
+        if (hasThumbRadiusDp) {
+            return thumbRadiusDp;
+        }
+        return resolveBaseRadius() / getResources().getDisplayMetrics().density;
+    }
+
+    public boolean hasThumbRadiusDp() {
+        return hasThumbRadiusDp;
+    }
+
+    public void clearThumbRadiusDp() {
+        hasThumbRadiusDp = false;
+        invalidate();
     }
 
     @Override
@@ -132,6 +386,11 @@ public class MaterialSwitch extends CompoundButton {
     @Override
     protected void onDraw(Canvas canvas) {
         float trackTop = (getHeight() - trackHeight) / 2.0f;
+        float handleCenterX = lerp(dp(HANDLE_UNCHECKED_CENTER_DP),
+                trackWidth - dp(HANDLE_CHECKED_CENTER_DP), handleProgress);
+        float handleRadius = resolveHandleRadius();
+        float centerY = trackTop + trackRadius;
+
         rectF.set(0.0f, trackTop, trackWidth, trackTop + trackHeight);
         paint.setColor(currentTrackColor);
         canvas.drawRoundRect(rectF, trackRadius, trackRadius, paint);
@@ -141,7 +400,7 @@ public class MaterialSwitch extends CompoundButton {
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(strokeWidth);
             if (isEnabled()) {
-                paint.setColor(dynamicColors.outline().getArgb(colorScheme));
+                paint.setColor(resolveTrackOutlineColor());
             } else {
                 paint.setColor(dynamicColors.outlineVariant().getArgb(colorScheme));
             }
@@ -150,15 +409,11 @@ public class MaterialSwitch extends CompoundButton {
             canvas.drawRoundRect(rectF, trackRadius - strokeHalf, trackRadius - strokeHalf, paint);
             paint.setStyle(Paint.Style.FILL);
         }
-        float handleCenterX = lerp(dp(HANDLE_UNCHECKED_CENTER_DP), trackWidth - dp(HANDLE_CHECKED_CENTER_DP), handleProgress);
-        float baseDiameter = lerp(HANDLE_UNCHECKED_DP, HANDLE_CHECKED_DP, handleProgress);
-        float handleDiameter = lerp(baseDiameter, HANDLE_CHECKED_DP + PRESS_EXTRA_DP, pressProgress);
-        float handleRadius = dp(handleDiameter) / 2.0f;
-        float centerY = trackTop + trackRadius;
         rectF.set(handleCenterX - handleRadius, centerY - handleRadius,
                 handleCenterX + handleRadius, centerY + handleRadius);
         paint.setColor(currentHandleColor);
         canvas.drawRoundRect(rectF, handleRadius, handleRadius, paint);
+        drawIcon(canvas, handleCenterX, centerY);
         super.onDraw(canvas);
     }
 
@@ -259,32 +514,72 @@ public class MaterialSwitch extends CompoundButton {
         colorAnimator.start();
     }
 
+    private void drawIcon(Canvas canvas, float centerX, float centerY) {
+        if (icon == null || !isChecked()) {
+            return;
+        }
+        float size = dp(ICON_SIZE_DP);
+        float half = size / 2.0f;
+        icon.setBounds((int) (centerX - half + 0.5f), (int) (centerY - half + 0.5f),
+                (int) (centerX + half + 0.5f), (int) (centerY + half + 0.5f));
+        icon.setColorFilter(resolveIconColor(), PorterDuff.Mode.SRC_IN);
+        icon.draw(canvas);
+    }
+
+    private void updateTrackMetrics() {
+        trackRadius = trackHeight / 2.0f;
+        minViewWidth = trackWidth + dp(8.0f);
+        minViewHeight = trackHeight;
+        setPadding((int) (minViewWidth + 0.5f), 0, 0, 0);
+    }
+
+    private float resolveBaseRadius() {
+        if (hasThumbRadiusDp) {
+            return Math.max(dp(thumbRadiusDp), dp(HANDLE_UNCHECKED_DP) / 2.0f);
+        }
+        float baseDiameterDp = lerp(HANDLE_UNCHECKED_DP, HANDLE_CHECKED_DP, handleProgress);
+        return dp(baseDiameterDp) / 2.0f;
+    }
+
+    private float resolveHandleRadius() {
+        float baseDiameter = resolveBaseRadius() * 2.0f;
+        float pressedDiameter = lerp(baseDiameter, dp(HANDLE_CHECKED_DP + PRESS_EXTRA_DP), pressProgress);
+        return Math.max(baseDiameter, pressedDiameter) / 2.0f;
+    }
+
     private int resolveTrackColor() {
         if (!isEnabled()) {
             if (isChecked()) {
-                return dynamicColors.outlineVariant().getArgb(colorScheme);
+                return applyAlphaFraction(getTrackColor(), DISABLED_TRACK_ALPHA);
             }
             return applyAlphaFraction(
                     dynamicColors.surfaceContainerHighest().getArgb(colorScheme), DISABLED_TRACK_ALPHA);
         }
-        if (isChecked()) {
-            return dynamicColors.primary().getArgb(colorScheme);
-        }
-        return dynamicColors.surfaceContainerHighest().getArgb(colorScheme);
+        return isChecked() ? getTrackColor() : getUnselectedTrackColor();
     }
 
     private int resolveHandleColor() {
         if (!isEnabled()) {
             if (isChecked()) {
-                return dynamicColors.onPrimary().getArgb(colorScheme);
+                return applyAlphaFraction(getThumbColor(), DISABLED_HANDLE_ALPHA);
             }
             return applyAlphaFraction(
                     dynamicColors.onSurface().getArgb(colorScheme), DISABLED_HANDLE_ALPHA);
         }
-        if (isChecked()) {
-            return dynamicColors.onPrimary().getArgb(colorScheme);
+        return isChecked() ? getThumbColor() : getUnselectedThumbColor();
+    }
+
+    private int resolveTrackOutlineColor() {
+        return hasTrackOutlineColor
+                ? trackOutlineColor
+                : dynamicColors.outline().getArgb(colorScheme);
+    }
+
+    private int resolveIconColor() {
+        if (!isEnabled()) {
+            return applyAlphaFraction(getIconColor(), DISABLED_HANDLE_ALPHA);
         }
-        return dynamicColors.outline().getArgb(colorScheme);
+        return getIconColor();
     }
 
     private int resolveTextColor() {

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ViewConfiguration;
+import android.view.ViewParent;
 
 public class MaterialRangeSlider extends MaterialSlider {
 
@@ -13,6 +15,9 @@ public class MaterialRangeSlider extends MaterialSlider {
     private SliderPopup lowPopup;
     private SliderPopup highPopup;
     private int activeThumb = -1;
+    private final int touchSlop;
+    private float touchDownX;
+    private boolean dragClaimed;
 
     public interface OnRangeChangeListener {
         void onRangeChanged(MaterialRangeSlider slider, int lowProgress, int highProgress);
@@ -22,6 +27,10 @@ public class MaterialRangeSlider extends MaterialSlider {
 
     public void setOnRangeChangeListener(OnRangeChangeListener listener) {
         this.onRangeChangeListener = listener;
+    }
+
+    public OnRangeChangeListener getOnRangeChangeListener() {
+        return onRangeChangeListener;
     }
 
     private static final int THUMB_LOW = 0;
@@ -38,25 +47,32 @@ public class MaterialRangeSlider extends MaterialSlider {
 
     public MaterialRangeSlider(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    public void setLowProgress(int progress) {
+    private void applyLowProgress(int progress) {
+        if (progress == lowProgress) {
+            return;
+        }
         this.lowProgress = Math.max(0, Math.min(highProgress, progress));
         invalidate();
         notifyRangeChanged();
     }
 
-    public int getLowProgress() {
+    private int readLowProgress() {
         return lowProgress;
     }
 
-    public void setHighProgress(int progress) {
+    private void applyHighProgress(int progress) {
+        if (progress == highProgress) {
+            return;
+        }
         this.highProgress = Math.max(lowProgress, Math.min(getInternalMax(), progress));
         invalidate();
         notifyRangeChanged();
     }
 
-    public int getHighProgress() {
+    private int readHighProgress() {
         return highProgress;
     }
 
@@ -83,33 +99,33 @@ public class MaterialRangeSlider extends MaterialSlider {
     }
 
     public void setLowValue(float value) {
-        float clamped = Math.max(h.min, Math.min(h.max, value));
-        int progress;
-        if (h.step > 0) {
-            progress = (int) ((clamped - h.min) / h.step);
-        } else {
-            progress = (int) ((clamped - h.min) / (h.max - h.min) * getInternalMax());
-        }
-        setLowProgress(progress);
+        applyLowProgress(progressFromValue(value));
     }
 
     public void setHighValue(float value) {
-        float clamped = Math.max(h.min, Math.min(h.max, value));
-        int progress;
-        if (h.step > 0) {
-            progress = (int) ((clamped - h.min) / h.step);
-        } else {
-            progress = (int) ((clamped - h.min) / (h.max - h.min) * getInternalMax());
-        }
-        setHighProgress(progress);
+        applyHighProgress(progressFromValue(value));
     }
 
+    @Override
     public float getValue() {
         return (getLowValue() + getHighValue()) / 2f;
     }
 
-    public float getValueRadius() {
-        return (getMaxValue() - getMinValue()) / 2f;
+    public void setValue(float value) {
+        int progress = progressFromValue(value);
+        applyLowProgress(progress);
+        applyHighProgress(progress);
+    }
+
+    private int progressFromValue(float value) {
+        float clamped = Math.max(h.min, Math.min(h.max, value));
+        if (h.step > 0) {
+            return (int) ((clamped - h.min) / h.step);
+        }
+        if (h.max == h.min || getInternalMax() <= 0) {
+            return 0;
+        }
+        return (int) ((clamped - h.min) / (h.max - h.min) * getInternalMax());
     }
 
     private int getInternalMax() {
@@ -124,7 +140,7 @@ public class MaterialRangeSlider extends MaterialSlider {
         float highFraction = internalMax > 0 ? (float) highProgress / internalMax : 0f;
         int lowCenterX = h.centerXFromFraction(lowFraction);
         int highCenterX = h.centerXFromFraction(highFraction);
-        float centerY = h.trackTop + SliderHelper.dp(this, SliderHelper.TRACK_HEIGHT_DP) / 2.0f;
+        float centerY = h.trackTop + SliderHelper.dp(this, h.getTrackHeightDp()) / 2.0f;
 
         h.drawCircularMask(canvas, this, enabled, lowCenterX, centerY, SliderHelper.MASK_0);
         h.drawCircularMask(canvas, this, enabled, highCenterX, centerY, SliderHelper.MASK_1);
@@ -134,16 +150,16 @@ public class MaterialRangeSlider extends MaterialSlider {
     }
 
     private void drawTrack(Canvas canvas, boolean enabled, int lowCenterX, int highCenterX) {
-        float trackHeight = SliderHelper.dp(this, SliderHelper.TRACK_HEIGHT_DP);
+        float trackHeight = SliderHelper.dp(this, h.getTrackHeightDp());
         float trackRadius = trackHeight / 2.0f;
 
         h.trackRect.set(h.trackLeft, h.trackTop, h.trackRight, h.trackBottom);
-        h.trackPaint.setColor(h.trackColor);
+        h.trackPaint.setColor(h.getTrackColor());
         canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
 
         if (highCenterX > lowCenterX) {
             h.trackRect.set(lowCenterX, h.trackTop, highCenterX, h.trackBottom);
-            h.trackPaint.setColor(enabled ? h.progressColor : h.disabledTrackColor);
+            h.trackPaint.setColor(enabled ? h.getProgressColor() : h.getDisabledTrackColor());
             canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
         }
     }
@@ -168,7 +184,7 @@ public class MaterialRangeSlider extends MaterialSlider {
 
         float touchX = event.getX();
         float touchY = event.getY();
-        float centerY = h.trackTop + SliderHelper.dp(this, SliderHelper.TRACK_HEIGHT_DP) / 2.0f;
+        float centerY = h.trackTop + SliderHelper.dp(this, h.getTrackHeightDp()) / 2.0f;
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -176,25 +192,38 @@ public class MaterialRangeSlider extends MaterialSlider {
                 if (activeThumb == -1) {
                     return false;
                 }
+                touchDownX = touchX;
+                dragClaimed = false;
                 h.startMaskAnimation(activeThumb == THUMB_LOW ? SliderHelper.MASK_0 : SliderHelper.MASK_1, this);
                 if (activeThumb == THUMB_LOW) {
                     setProgressFromTouch(THUMB_LOW, touchX);
-                    showPopup(THUMB_LOW);
                 } else {
                     setProgressFromTouch(THUMB_HIGH, touchX);
-                    showPopup(THUMB_HIGH);
+                }
+                if (isValueIndicatorEnabled()) {
+                    showPopup(activeThumb);
                 }
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (!dragClaimed && Math.abs(touchX - touchDownX) > touchSlop) {
+                    dragClaimed = true;
+                    requestParentDisallowInterceptTouchEvent(true);
+                }
                 if (activeThumb != -1) {
                     setProgressFromTouch(activeThumb, touchX);
-                    updatePopup(activeThumb);
+                    if (isValueIndicatorEnabled()) {
+                        updatePopup(activeThumb);
+                    }
                     invalidate();
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (dragClaimed) {
+                    dragClaimed = false;
+                    requestParentDisallowInterceptTouchEvent(false);
+                }
                 h.stopMaskAnimation(activeThumb == THUMB_LOW ? SliderHelper.MASK_0 : SliderHelper.MASK_1, this);
                 if (activeThumb == THUMB_LOW) {
                     hidePopup(THUMB_LOW);
@@ -206,6 +235,13 @@ public class MaterialRangeSlider extends MaterialSlider {
                 break;
         }
         return true;
+    }
+
+    private void requestParentDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        ViewParent parent = getParent();
+        if (parent != null) {
+            parent.requestDisallowInterceptTouchEvent(disallowIntercept);
+        }
     }
 
     private int pickThumb(float touchX, float touchY, float centerY) {
@@ -232,18 +268,17 @@ public class MaterialRangeSlider extends MaterialSlider {
     private void setProgressFromTouch(int thumb, float touchX) {
         int progress = h.progressFromTouch(touchX, getInternalMax());
         if (thumb == THUMB_LOW) {
-            lowProgress = Math.max(0, Math.min(highProgress, progress));
+            applyLowProgress(progress);
         } else {
-            highProgress = Math.max(lowProgress, Math.min(getInternalMax(), progress));
+            applyHighProgress(progress);
         }
-        notifyRangeChanged();
     }
 
     private void showPopup(int thumb) {
         SliderPopup popup = thumb == THUMB_LOW ? getOrCreateLowPopup() : getOrCreateHighPopup();
         float value = thumb == THUMB_LOW ? getLowValue() : getHighValue();
         int cx = thumb == THUMB_LOW ? getLowCenterX() : getHighCenterX();
-        int cy = h.trackTop + (int) (SliderHelper.dp(this, SliderHelper.TRACK_HEIGHT_DP) / 2f);
+        int cy = h.trackTop + (int) (SliderHelper.dp(this, h.getTrackHeightDp()) / 2f);
         popup.show(this, cx, cy, h.formatProgress(value));
     }
 

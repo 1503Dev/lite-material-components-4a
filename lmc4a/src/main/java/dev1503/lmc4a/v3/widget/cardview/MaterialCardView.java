@@ -25,6 +25,8 @@ public class MaterialCardView extends LinearLayout {
     public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
 
     private static final float DEFAULT_CORNER_RADIUS_DP = 12.0f;
+    private static final float DEFAULT_ELEVATION_DP = 0.0f;
+    private static final float DEFAULT_STROKE_WIDTH_DP = 0.0f;
     private static final float PRESSED_OVERLAY_ALPHA = 0.10f;
 
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
@@ -36,6 +38,13 @@ public class MaterialCardView extends LinearLayout {
     private DynamicScheme colorScheme = publicColorScheme;
     private float cornerRadius;
     private int containerColor;
+    private boolean hasContainerColor;
+    private int strokeColor;
+    private boolean hasStrokeColor;
+    private float strokeWidthDp;
+    private boolean hasStrokeWidthDp;
+    private float elevationDp;
+    private boolean hasElevationDp;
 
     public MaterialCardView(Context context) {
         this(context, null);
@@ -49,6 +58,9 @@ public class MaterialCardView extends LinearLayout {
         super(context, attrs, defStyleAttr);
         cornerRadius = dp(DEFAULT_CORNER_RADIUS_DP);
         containerColor = dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+        strokeColor = dynamicColors.outline().getArgb(colorScheme);
+        strokeWidthDp = DEFAULT_STROKE_WIDTH_DP;
+        elevationDp = DEFAULT_ELEVATION_DP;
         updateShape();
     }
 
@@ -61,23 +73,122 @@ public class MaterialCardView extends LinearLayout {
         return cornerRadius / getResources().getDisplayMetrics().density;
     }
 
-    public void setCardBackgroundColor(int containerColor) {
+    public void clearCornerRadiusDp() {
+        setCornerRadiusDp(DEFAULT_CORNER_RADIUS_DP);
+    }
+
+    public void setContainerColor(int containerColor) {
         this.containerColor = containerColor;
+        this.hasContainerColor = true;
         updateShape();
     }
 
-    public int getCardBackgroundColor() {
-        return containerColor;
+    public int getContainerColor() {
+        return resolveContainerColor();
+    }
+
+    public boolean hasContainerColor() {
+        return hasContainerColor;
+    }
+
+    public void clearContainerColor() {
+        this.hasContainerColor = false;
+        this.containerColor = dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+        updateShape();
+    }
+
+    public void setElevationDp(float elevationDp) {
+        this.elevationDp = Math.max(0f, elevationDp);
+        this.hasElevationDp = true;
+        applyElevation();
+    }
+
+    public float getElevationDp() {
+        return hasElevationDp ? elevationDp : DEFAULT_ELEVATION_DP;
+    }
+
+    public boolean hasElevationDp() {
+        return hasElevationDp;
+    }
+
+    public void clearElevationDp() {
+        this.hasElevationDp = false;
+        this.elevationDp = DEFAULT_ELEVATION_DP;
+        applyElevation();
+    }
+
+    public void setStrokeWidthDp(float strokeWidthDp) {
+        this.strokeWidthDp = Math.max(0f, strokeWidthDp);
+        this.hasStrokeWidthDp = true;
+        updateShape();
+    }
+
+    public float getStrokeWidthDp() {
+        return hasStrokeWidthDp ? strokeWidthDp : DEFAULT_STROKE_WIDTH_DP;
+    }
+
+    public boolean hasStrokeWidthDp() {
+        return hasStrokeWidthDp;
+    }
+
+    public void clearStrokeWidthDp() {
+        this.hasStrokeWidthDp = false;
+        this.strokeWidthDp = DEFAULT_STROKE_WIDTH_DP;
+        updateShape();
+    }
+
+    public void setStrokeColor(int strokeColor) {
+        this.strokeColor = strokeColor;
+        this.hasStrokeColor = true;
+        updateShape();
+    }
+
+    public int getStrokeColor() {
+        return resolveStrokeColor();
+    }
+
+    public boolean hasStrokeColor() {
+        return hasStrokeColor;
+    }
+
+    public void clearStrokeColor() {
+        this.hasStrokeColor = false;
+        this.strokeColor = dynamicColors.outline().getArgb(colorScheme);
+        updateShape();
     }
 
     public void setColorScheme(DynamicScheme colorScheme) {
-        this.colorScheme = colorScheme;
-        containerColor = dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+        this.colorScheme = colorScheme == null ? publicColorScheme : colorScheme;
+        this.hasContainerColor = false;
+        this.containerColor = dynamicColors.surfaceContainerLow().getArgb(this.colorScheme);
+        this.hasStrokeColor = false;
+        this.strokeColor = dynamicColors.outline().getArgb(this.colorScheme);
         updateShape();
     }
 
     public DynamicScheme getColorScheme() {
         return colorScheme;
+    }
+
+    private int resolveContainerColor() {
+        if (hasContainerColor) {
+            return containerColor;
+        }
+        return dynamicColors.surfaceContainerLow().getArgb(colorScheme);
+    }
+
+    private int resolveStrokeColor() {
+        if (hasStrokeColor) {
+            return strokeColor;
+        }
+        return dynamicColors.outline().getArgb(colorScheme);
+    }
+
+    private void applyElevation() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setElevation(dp(elevationDp));
+        }
+        invalidate();
     }
 
     private void updateShape() {
@@ -96,9 +207,11 @@ public class MaterialCardView extends LinearLayout {
     }
 
     private void refreshBackground() {
+        int resolvedContainerColor = resolveContainerColor();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && isClickable()) {
             contentDrawable.setCornerRadius(cornerRadius);
-            contentDrawable.setColor(containerColor);
+            contentDrawable.setColor(resolvedContainerColor);
+            applyStroke(contentDrawable);
             maskDrawable.setCornerRadius(cornerRadius);
             maskDrawable.setColor(Color.WHITE);
             setBackground(new RippleDrawable(
@@ -109,8 +222,17 @@ public class MaterialCardView extends LinearLayout {
         } else {
             GradientDrawable background = new GradientDrawable();
             background.setCornerRadius(cornerRadius);
-            background.setColor(containerColor);
+            background.setColor(resolvedContainerColor);
+            applyStroke(background);
             setBackground(background);
+        }
+    }
+
+    private void applyStroke(GradientDrawable drawable) {
+        if (strokeWidthDp > 0f) {
+            drawable.setStroke((int) (dp(strokeWidthDp) + 0.5f), resolveStrokeColor());
+        } else {
+            drawable.setStroke(0, Color.TRANSPARENT);
         }
     }
 

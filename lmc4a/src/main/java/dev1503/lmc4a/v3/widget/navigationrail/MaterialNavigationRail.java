@@ -2,6 +2,7 @@ package dev1503.lmc4a.v3.widget.navigationrail;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -11,9 +12,6 @@ import android.widget.LinearLayout;
 
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
@@ -40,11 +38,20 @@ public class MaterialNavigationRail extends ViewGroup {
     private NavigationRailLabelVisibilityMode labelVisibilityMode = NavigationRailLabelVisibilityMode.AUTO;
     private DynamicScheme colorScheme = publicColorScheme;
 
+    private int containerColor;
+    private boolean hasContainerColor;
+    private int indicatorColor;
+    private boolean hasIndicatorColor;
+    private int iconColor;
+    private boolean hasIconColor;
+    private int textColor;
+    private boolean hasTextColor;
+
     private ViewPager boundPager;
     private ViewPager.SimpleOnPageChangeListener pageListener;
     private boolean syncingFromPager;
     private int selectedIndex = -1;
-    private final List<OnItemSelectedListener> itemSelectedListeners = new ArrayList<>();
+    private OnItemSelectedListener itemSelectedListener;
 
     private final CompoundButton.OnCheckedChangeListener itemCheckListener =
             new CompoundButton.OnCheckedChangeListener() {
@@ -63,12 +70,12 @@ public class MaterialNavigationRail extends ViewGroup {
                     }
                     if (index != selectedIndex) {
                         selectedIndex = index;
-                        for (OnItemSelectedListener listener : itemSelectedListeners) {
-                            listener.onItemSelected(index);
+                        if (itemSelectedListener != null) {
+                            itemSelectedListener.onItemSelected(index);
                         }
                     } else if (index >= 0) {
-                        for (OnItemSelectedListener listener : itemSelectedListeners) {
-                            listener.onItemReselected(index);
+                        if (itemSelectedListener != null) {
+                            itemSelectedListener.onItemReselected(index);
                         }
                     }
                     if (boundPager != null && !syncingFromPager && index >= 0) {
@@ -125,11 +132,15 @@ public class MaterialNavigationRail extends ViewGroup {
     }
 
     public void setColorScheme(DynamicScheme colorScheme) {
-        this.colorScheme = colorScheme;
+        this.colorScheme = colorScheme == null ? publicColorScheme : colorScheme;
+        hasContainerColor = false;
+        hasIndicatorColor = false;
+        hasIconColor = false;
+        hasTextColor = false;
         for (int i = 0; i < getChildCount(); i++) {
-            View child = getChildAt(i);
-            if (child instanceof MaterialNavigationRailItemView) {
-                ((MaterialNavigationRailItemView) child).setColorScheme(colorScheme);
+            MaterialNavigationRailItemView item = getItem(i);
+            if (item != null) {
+                item.setColorScheme(this.colorScheme);
             }
         }
         invalidate();
@@ -139,18 +150,76 @@ public class MaterialNavigationRail extends ViewGroup {
         return colorScheme;
     }
 
-    public void addOnItemSelectedListener(OnItemSelectedListener listener) {
-        if (listener != null && !itemSelectedListeners.contains(listener)) {
-            itemSelectedListeners.add(listener);
-        }
+    public void setContainerColor(int containerColor) {
+        this.containerColor = containerColor;
+        this.hasContainerColor = true;
+        invalidateItemColors();
     }
 
-    public void removeOnItemSelectedListener(OnItemSelectedListener listener) {
-        itemSelectedListeners.remove(listener);
+    public int getContainerColor() {
+        return hasContainerColor
+                ? containerColor
+                : dynamicColors.surfaceContainer().getArgb(colorScheme);
     }
 
-    public void clearOnItemSelectedListeners() {
-        itemSelectedListeners.clear();
+    public void clearContainerColor() {
+        hasContainerColor = false;
+        invalidateItemColors();
+    }
+
+    public void setIndicatorColor(int indicatorColor) {
+        this.indicatorColor = indicatorColor;
+        this.hasIndicatorColor = true;
+        invalidateItemColors();
+    }
+
+    public int getIndicatorColor() {
+        return hasIndicatorColor
+                ? indicatorColor
+                : dynamicColors.secondaryContainer().getArgb(colorScheme);
+    }
+
+    public void clearIndicatorColor() {
+        hasIndicatorColor = false;
+        invalidateItemColors();
+    }
+
+    public void setIconColor(int iconColor) {
+        this.iconColor = iconColor;
+        this.hasIconColor = true;
+        invalidateItemColors();
+    }
+
+    public int getIconColor() {
+        return hasIconColor ? iconColor : dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    public void clearIconColor() {
+        hasIconColor = false;
+        invalidateItemColors();
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+        this.hasTextColor = true;
+        invalidateItemColors();
+    }
+
+    public int getTextColor() {
+        return hasTextColor ? textColor : dynamicColors.onSurfaceVariant().getArgb(colorScheme);
+    }
+
+    public void clearTextColor() {
+        hasTextColor = false;
+        invalidateItemColors();
+    }
+
+    public void setOnItemSelectedListener(OnItemSelectedListener listener) {
+        itemSelectedListener = listener;
+    }
+
+    public OnItemSelectedListener getOnItemSelectedListener() {
+        return itemSelectedListener;
     }
 
     public int getSelectedItemPosition() {
@@ -188,7 +257,7 @@ public class MaterialNavigationRail extends ViewGroup {
             ((ViewGroup) item.getParent()).removeView(item);
         }
         int insertAt = index < 0 || index > getChildCount() ? getChildCount() : index;
-        item.setColorScheme(colorScheme);
+        item.applyColorScheme(colorScheme);
         item.setLabelVisibilityMode(labelVisibilityMode);
         item.setLayoutParams(defaultParamsFor(orientation));
         item.setOnCheckedChangeListener(itemCheckListener);
@@ -251,13 +320,13 @@ public class MaterialNavigationRail extends ViewGroup {
 
     public void bindTo(ViewPager viewPager) {
         if (viewPager == null) {
-            unbindViewPager();
+            unbind();
             return;
         }
         if (boundPager == viewPager) {
             return;
         }
-        unbindViewPager();
+        unbind();
 
         PagerAdapter adapter = viewPager.getAdapter();
         if (adapter != null) {
@@ -300,12 +369,48 @@ public class MaterialNavigationRail extends ViewGroup {
         }
     }
 
-    public void unbindViewPager() {
+    public void unbind() {
         if (boundPager != null && pageListener != null) {
             boundPager.removeOnPageChangeListener(pageListener);
         }
         boundPager = null;
         pageListener = null;
+    }
+
+    public boolean isBound() {
+        return boundPager != null;
+    }
+
+    boolean hasContainerColorOverride() {
+        return hasContainerColor;
+    }
+
+    int peekContainerColor() {
+        return containerColor;
+    }
+
+    boolean hasIndicatorColorOverride() {
+        return hasIndicatorColor;
+    }
+
+    int peekIndicatorColor() {
+        return indicatorColor;
+    }
+
+    boolean hasIconColorOverride() {
+        return hasIconColor;
+    }
+
+    int peekIconColor() {
+        return iconColor;
+    }
+
+    boolean hasTextColorOverride() {
+        return hasTextColor;
+    }
+
+    int peekTextColor() {
+        return textColor;
     }
 
     @Override
@@ -376,13 +481,24 @@ public class MaterialNavigationRail extends ViewGroup {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawColor(dynamicColors.surfaceContainer().getArgb(colorScheme));
+        canvas.drawColor(hasContainerColor
+                ? containerColor : dynamicColors.surfaceContainer().getArgb(colorScheme));
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        unbindViewPager();
+        unbind();
+    }
+
+    private void invalidateItemColors() {
+        for (int i = 0; i < getChildCount(); i++) {
+            MaterialNavigationRailItemView item = getItem(i);
+            if (item != null) {
+                item.invalidate();
+            }
+        }
+        invalidate();
     }
 
     private LinearLayout.LayoutParams defaultParamsFor(NavigationRailOrientation orientation) {

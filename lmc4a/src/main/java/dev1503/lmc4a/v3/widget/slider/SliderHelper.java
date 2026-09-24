@@ -51,7 +51,16 @@ class SliderHelper {
     int trackColor;
     int thumbColor;
     int disabledTrackColor;
-    int disabledThumbColor;
+
+    private Integer progressColorOverride;
+    private Integer trackColorOverride;
+    private Integer thumbColorOverride;
+    private Integer disabledTrackColorOverride;
+    private Integer disabledThumbColorOverride;
+    private Integer valueIndicatorColorOverride;
+    private float thumbRadiusDp = THUMB_SIZE_DP / 2.0f;
+    private float trackHeightDp = TRACK_HEIGHT_DP;
+    boolean valueIndicatorEnabled = true;
 
     int trackTop;
     int trackBottom;
@@ -63,9 +72,14 @@ class SliderHelper {
     private final ValueAnimator[] springAnimator = new ValueAnimator[2];
     private final long[] lastFrameTime = new long[2];
     private View hostingView;
+    private int lastTrackWidthPx;
 
     SliderHelper() {
-        this.colorScheme = publicColorScheme;
+        this(publicColorScheme);
+    }
+
+    SliderHelper(DynamicScheme colorScheme) {
+        this.colorScheme = colorScheme != null ? colorScheme : publicColorScheme;
     }
 
     void resolveColors() {
@@ -75,16 +89,134 @@ class SliderHelper {
         int outlineVariant = dynamicColors.outlineVariant().getArgb(colorScheme);
         int outline = dynamicColors.outline().getArgb(colorScheme);
         disabledTrackColor = blendColors(outlineVariant, outline, 0.5f);
-        disabledThumbColor = disabledTrackColor;
+    }
+
+    void clearColorOverrides() {
+        progressColorOverride = null;
+        trackColorOverride = null;
+        thumbColorOverride = null;
+        disabledTrackColorOverride = null;
+        disabledThumbColorOverride = null;
+        valueIndicatorColorOverride = null;
+        valueIndicatorEnabled = true;
+        resolveColors();
+    }
+
+    int getProgressColor() {
+        return progressColorOverride != null ? progressColorOverride : progressColor;
+    }
+
+    void setProgressColor(int color) {
+        progressColorOverride = color;
+    }
+
+    void clearProgressColor() {
+        progressColorOverride = null;
+    }
+
+    int getTrackColor() {
+        return trackColorOverride != null ? trackColorOverride : trackColor;
+    }
+
+    void setTrackColor(int color) {
+        trackColorOverride = color;
+    }
+
+    void clearTrackColor() {
+        trackColorOverride = null;
+    }
+
+    int getThumbColor() {
+        return thumbColorOverride != null ? thumbColorOverride : thumbColor;
+    }
+
+    void setThumbColor(int color) {
+        thumbColorOverride = color;
+    }
+
+    void clearThumbColor() {
+        thumbColorOverride = null;
+    }
+
+    int getDisabledTrackColor() {
+        return disabledTrackColorOverride != null ? disabledTrackColorOverride : disabledTrackColor;
+    }
+
+    void setDisabledTrackColor(int color) {
+        disabledTrackColorOverride = color;
+    }
+
+    void clearDisabledTrackColor() {
+        disabledTrackColorOverride = null;
+    }
+
+    int getDisabledThumbColor() {
+        if (disabledThumbColorOverride != null) {
+            return disabledThumbColorOverride;
+        }
+        return getDisabledTrackColor();
+    }
+
+    void setDisabledThumbColor(int color) {
+        disabledThumbColorOverride = color;
+    }
+
+    void clearDisabledThumbColor() {
+        disabledThumbColorOverride = null;
+    }
+
+    int getValueIndicatorColor() {
+        if (valueIndicatorColorOverride != null) {
+            return valueIndicatorColorOverride;
+        }
+        return dynamicColors.primary().getArgb(colorScheme);
+    }
+
+    void setValueIndicatorColor(int color) {
+        valueIndicatorColorOverride = color;
+    }
+
+    void clearValueIndicatorColor() {
+        valueIndicatorColorOverride = null;
+    }
+
+    float getThumbRadiusDp() {
+        return thumbRadiusDp;
+    }
+
+    void setThumbRadiusDp(float radiusDp) {
+        thumbRadiusDp = Math.max(1.0f, radiusDp);
+        thumbShadowShader = null;
+    }
+
+    void clearThumbRadiusDp() {
+        thumbRadiusDp = THUMB_SIZE_DP / 2.0f;
+        thumbShadowShader = null;
+    }
+
+    float getTrackHeightDp() {
+        return trackHeightDp;
+    }
+
+    void setTrackHeightDp(float heightDp) {
+        trackHeightDp = Math.max(1.0f, heightDp);
+    }
+
+    void clearTrackHeightDp() {
+        trackHeightDp = TRACK_HEIGHT_DP;
+    }
+
+    float getTrackWidthDp(View view) {
+        return lastTrackWidthPx / view.getResources().getDisplayMetrics().density;
     }
 
     void updateTrackBounds(View view, int w, int h) {
-        float thumbSize = dp(view, THUMB_SIZE_DP);
-        float halfThumb = thumbSize / 2.0f;
-        trackTop = (int) ((h - dp(view, TRACK_HEIGHT_DP)) / 2);
-        trackBottom = trackTop + (int) dp(view, TRACK_HEIGHT_DP);
-        trackLeft = (int) (view.getPaddingLeft() + halfThumb);
-        trackRight = (int) (w - view.getPaddingRight() - halfThumb);
+        float thumbRadius = dp(view, getThumbRadiusDp());
+        trackTop = (int) ((h - dp(view, getTrackHeightDp())) / 2);
+        trackBottom = trackTop + (int) dp(view, getTrackHeightDp());
+        trackLeft = (int) (view.getPaddingLeft() + thumbRadius);
+        trackRight = (int) (w - view.getPaddingRight() - thumbRadius);
+        lastTrackWidthPx = Math.max(0, trackRight - trackLeft);
     }
 
     int[] measureView(int widthMeasureSpec, int heightMeasureSpec, View view) {
@@ -180,13 +312,12 @@ class SliderHelper {
         if (!enabled || animatedMaskRadius[id] <= 0f) return;
         float targetRadius = dp(view, MASK_RADIUS_DP);
         float radius = animatedMaskRadius[id] * targetRadius;
-        thumbPaint.setColor(applyAlphaFraction(thumbColor, 0.12f));
+        thumbPaint.setColor(applyAlphaFraction(getThumbColor(), 0.12f));
         canvas.drawCircle(centerX, centerY, radius, thumbPaint);
     }
 
     void drawThumb(Canvas canvas, View view, boolean enabled, float centerX, float centerY) {
-        float thumbSize = dp(view, THUMB_SIZE_DP);
-        float thumbRadius = thumbSize / 2.0f;
+        float thumbRadius = dp(view, getThumbRadiusDp());
         float shadowRadius = thumbRadius + dp(view, THUMB_SHADOW_BLUR_DP);
         float shadowCenterY = centerY + dp(view, THUMB_SHADOW_OFFSET_DP);
 
@@ -206,7 +337,7 @@ class SliderHelper {
         canvas.drawCircle(centerX, shadowCenterY, shadowRadius, thumbShadowPaint);
         thumbShadowPaint.setShader(null);
 
-        thumbPaint.setColor(enabled ? thumbColor : disabledThumbColor);
+        thumbPaint.setColor(enabled ? getThumbColor() : getDisabledThumbColor());
         thumbRect.set(centerX - thumbRadius, centerY - thumbRadius,
                 centerX + thumbRadius, centerY + thumbRadius);
         canvas.drawRoundRect(thumbRect, thumbRadius, thumbRadius, thumbPaint);
@@ -217,6 +348,9 @@ class SliderHelper {
     }
 
     int progressFromTouch(float touchX, int internalMax) {
+        if (trackRight == trackLeft) {
+            return 0;
+        }
         float fraction = (touchX - trackLeft) / (float) (trackRight - trackLeft);
         fraction = Math.max(0f, Math.min(1f, fraction));
         return (int) (fraction * internalMax + 0.5f);
@@ -236,8 +370,9 @@ class SliderHelper {
 
     SliderPopup createPopup(View view) {
         SliderPopup popup = new SliderPopup(view.getContext());
-        popup.setBackgroundColor(dynamicColors.primary().getArgb(colorScheme));
+        popup.setValueIndicatorColor(getValueIndicatorColor());
         popup.setTextColor(dynamicColors.onPrimary().getArgb(colorScheme));
+        popup.setThumbRadiusDp(getThumbRadiusDp());
         return popup;
     }
 

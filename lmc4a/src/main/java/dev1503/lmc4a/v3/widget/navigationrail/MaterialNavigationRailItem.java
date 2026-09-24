@@ -1,25 +1,25 @@
 package dev1503.lmc4a.v3.widget.navigationrail;
 
-import dev1503.lmc4a.Icon;
+import android.graphics.drawable.Drawable;
 
 public class MaterialNavigationRailItem {
 
-    private Icon icon;
+    private Drawable icon;
     private CharSequence text;
 
     public MaterialNavigationRailItem() {
     }
 
-    public MaterialNavigationRailItem(Icon icon, CharSequence text) {
+    public MaterialNavigationRailItem(Drawable icon, CharSequence text) {
         this.icon = icon;
         this.text = text;
     }
 
-    public void setIcon(Icon icon) {
+    public void setIcon(Drawable icon) {
         this.icon = icon;
     }
 
-    public Icon getIcon() {
+    public Drawable getIcon() {
         return icon;
     }
 
