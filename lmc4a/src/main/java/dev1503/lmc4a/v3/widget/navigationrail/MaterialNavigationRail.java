@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 
@@ -24,7 +24,7 @@ public class MaterialNavigationRail extends ViewGroup {
         void onItemReselected(int position);
     }
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float HORIZONTAL_ITEM_HEIGHT_DP = 72.0f;
     private static final float VERTICAL_ITEM_WIDTH_DP = 98.0f;

@@ -15,13 +15,13 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ProgressBar;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 
 public class BaseProgressIndicator extends ProgressBar {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float DEFAULT_TRACK_THICKNESS_DP = 4.0f;
     private static final float DISABLED_ALPHA = 0.38f;

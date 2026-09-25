@@ -17,14 +17,14 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.CheckBox;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 
 public class MaterialCheckBox extends CheckBox {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float COMPONENT_MIN_SIZE_DP = 48.0f;
     private static final float BOX_SIZE_DP = 18.0f;

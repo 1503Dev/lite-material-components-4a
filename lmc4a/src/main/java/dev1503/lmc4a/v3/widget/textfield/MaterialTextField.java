@@ -21,13 +21,13 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 
 public class MaterialTextField extends EditText {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float BOX_HEIGHT_DP = 56.0f;
     private static final float OUTLINED_TOP_INSET_DP = 8.0f;

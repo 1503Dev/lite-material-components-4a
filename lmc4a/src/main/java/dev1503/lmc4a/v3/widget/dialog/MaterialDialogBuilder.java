@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,12 +14,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -29,7 +27,7 @@ import dev1503.lmc4a.v3.widget.button.MaterialButton;
 
 public class MaterialDialogBuilder extends AlertDialog.Builder {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float DEFAULT_CORNER_RADIUS_DP = 28.0f;
 

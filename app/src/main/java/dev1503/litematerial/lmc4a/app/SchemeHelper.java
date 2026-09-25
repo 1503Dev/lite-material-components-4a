@@ -2,7 +2,7 @@ package dev1503.litematerial.lmc4a.app;
 
 import android.app.Activity;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 
 public final class SchemeHelper {
 
@@ -10,11 +10,11 @@ public final class SchemeHelper {
     }
 
     public static int backgroundColor() {
-        return Imc.publicColorScheme.getBackground();
+        return Lmc.publicColorScheme.getBackground();
     }
 
     public static int onBackgroundColor() {
-        return Imc.publicColorScheme.getOnBackground();
+        return Lmc.publicColorScheme.getOnBackground();
     }
 
     public static void applyWindowBackground(Activity activity) {

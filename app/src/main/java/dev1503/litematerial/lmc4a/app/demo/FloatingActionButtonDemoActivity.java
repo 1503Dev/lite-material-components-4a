@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.widget.ColorVariant;
 import dev1503.lmc4a.v3.widget.SizeVariant;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
@@ -148,7 +148,7 @@ public class FloatingActionButtonDemoActivity extends DemoActivity {
                 + "clearColorOverrides() 一次清除全部颜色覆盖。"), captionParams());
 
         final MaterialFloatingActionButton fab = createFab(SizeVariant.SMALL, true);
-        fab.setContainerColor(Imc.publicColorScheme.getTertiaryContainer());
+        fab.setContainerColor(Lmc.publicColorScheme.getTertiaryContainer());
         content.addView(row(
                 fab,
                 actionButton("clearContainerColor()", v -> {
@@ -162,7 +162,7 @@ public class FloatingActionButtonDemoActivity extends DemoActivity {
                             + "，容器色回到 primaryContainer " + hex(fab.getContainerColor()));
                 }),
                 actionButton("重新 setContainerColor", v -> {
-                    fab.setContainerColor(Imc.publicColorScheme.getTertiaryContainer());
+                    fab.setContainerColor(Lmc.publicColorScheme.getTertiaryContainer());
                     toast("setContainerColor(tertiaryContainer) → " + hex(fab.getContainerColor()));
                 })), rowParams());
     }

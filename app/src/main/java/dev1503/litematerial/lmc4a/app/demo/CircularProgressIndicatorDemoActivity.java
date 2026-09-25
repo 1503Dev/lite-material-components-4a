@@ -10,7 +10,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.progressindicator.MaterialCircularProgressIndicator;
@@ -82,8 +82,8 @@ public class CircularProgressIndicatorDemoActivity extends DemoActivity {
         MaterialCircularProgressIndicator custom = createIndicator(false, 70);
         custom.setIndicatorSizeDp(72.0f);
         custom.setTrackThicknessDp(8.0f);
-        custom.setActiveIndicatorColor(Imc.publicColorScheme.getTertiary());
-        custom.setTrackColor(Imc.publicColorScheme.getTertiaryContainer());
+        custom.setActiveIndicatorColor(Lmc.publicColorScheme.getTertiary());
+        custom.setTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
         content.addView(custom, circleParams());
 
         content.addView(createLabel("圆头线帽 setStrokeCap(ROUND)"), labelParams());

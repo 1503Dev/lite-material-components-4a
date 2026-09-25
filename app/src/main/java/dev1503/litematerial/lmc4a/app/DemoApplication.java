@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.hct.Hct;
 import dev1503.lmc4a.v3.color.scheme.SchemeTonalSpot;
 
@@ -30,7 +30,7 @@ public class DemoApplication extends Application {
         int nightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         boolean isDark = nightMode == Configuration.UI_MODE_NIGHT_YES;
         int seedColor = resolveSeedColor();
-        Imc.publicColorScheme = new SchemeTonalSpot(Hct.fromInt(seedColor), isDark, 0.0);
+        Lmc.publicColorScheme = new SchemeTonalSpot(Hct.fromInt(seedColor), isDark, 0.0);
     }
 
     private int resolveSeedColor() {

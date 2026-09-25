@@ -16,14 +16,14 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.RadioButton;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 
 public class MaterialRadioButton extends RadioButton {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float COMPONENT_MIN_SIZE_DP = 48.0f;
     private static final float BUTTON_SIZE_DP = 20.0f;

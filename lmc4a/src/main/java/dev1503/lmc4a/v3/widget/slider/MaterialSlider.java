@@ -6,12 +6,12 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 
 public class MaterialSlider extends SeekBar {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     protected final SliderHelper h = new SliderHelper(publicColorScheme);
     private SliderPopup popup;

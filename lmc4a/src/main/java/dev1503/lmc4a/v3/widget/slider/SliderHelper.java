@@ -11,7 +11,7 @@ import android.graphics.Shader;
 import android.util.TypedValue;
 import android.view.View;
 
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -21,7 +21,7 @@ class SliderHelper {
     static final int MASK_0 = 0;
     static final int MASK_1 = 1;
 
-    static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     static final float DEFAULT_HEIGHT_DP = 48.0f;
     static final float TRACK_HEIGHT_DP = 4.0f;
