@@ -24,6 +24,9 @@
         <activity android:name=".demo.SliderDemoActivity" />
         <activity android:name=".demo.RangeSliderDemoActivity" />
         <activity android:name=".demo.RadioButtonDemoActivity" />
+        <activity android:name=".demo.CheckBoxDemoActivity" />
+        <activity android:name=".demo.ProgressIndicatorDemoActivity" />
+        <activity android:name=".demo.CircularProgressIndicatorDemoActivity" />
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
         <activity android:name=".demo.NavigationRailDemoActivity" />

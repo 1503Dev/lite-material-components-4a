@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -18,7 +17,7 @@ import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.slider.MaterialRangeSlider;
 
-public class RangeSliderDemoActivity extends Activity {
+public class RangeSliderDemoActivity extends DemoActivity {
 
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
 

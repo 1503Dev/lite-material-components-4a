@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --install "platforms;android-37.0" || true
+          yes | sdkmanager --install "platforms;android-37.1" || true
+          yes | sdkmanager --install "build-tools;37.0.0" || true
+          sdkmanager --list_installed | grep -E "platforms;|build-tools;" || true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build lmc4a and app
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :lmc4a:assembleRelease :app:assembleDebug --stacktrace
+
+      - name: Collect artifacts
+        id: snapshot
+        run: |
+          timestamp=$(date -u +'%Y%m%d%H%M%S')
+          echo "timestamp=$timestamp" >> "$GITHUB_OUTPUT"
+          mkdir -p ci-artifacts
+          cp lmc4a/build/outputs/aar/lmc4a-release.aar "ci-artifacts/SNAPSHOT-${timestamp}.aar"
+          cp app/build/outputs/apk/debug/app-debug.apk "ci-artifacts/app-debug-${timestamp}.apk"
+          ls -l ci-artifacts
+
+      - name: Upload lmc4a snapshot AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: lmc4a-SNAPSHOT-${{ steps.snapshot.outputs.timestamp }}
+          path: ci-artifacts/SNAPSHOT-*.aar
+          if-no-files-found: error
+
+      - name: Upload app APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ steps.snapshot.outputs.timestamp }}
+          path: ci-artifacts/app-debug-*.apk
+          if-no-files-found: error

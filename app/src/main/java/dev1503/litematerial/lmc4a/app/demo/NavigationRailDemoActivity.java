@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -29,7 +28,7 @@ import dev1503.lmc4a.v3.widget.navigationrail.NavigationRailLabelVisibilityMode;
 import dev1503.lmc4a.v3.widget.navigationrail.NavigationRailOrientation;
 import dev1503.lmc4a.v3.widget.radiobutton.MaterialRadioButton;
 
-public class NavigationRailDemoActivity extends Activity {
+public class NavigationRailDemoActivity extends DemoActivity {
 
     private static final int[] ICON_RES_IDS = {
             android.R.drawable.ic_menu_agenda,
