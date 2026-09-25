@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.switches.MaterialSwitch;
@@ -76,11 +76,11 @@ public class SwitchDemoActivity extends DemoActivity {
 
         final MaterialSwitch materialSwitch = createSwitch("Thumb color = tertiary");
         materialSwitch.setChecked(true);
-        materialSwitch.setThumbColor(Imc.publicColorScheme.getTertiary());
+        materialSwitch.setThumbColor(Lmc.publicColorScheme.getTertiary());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setThumbColor(tertiary)", v -> {
-                    materialSwitch.setThumbColor(Imc.publicColorScheme.getTertiary());
+                    materialSwitch.setThumbColor(Lmc.publicColorScheme.getTertiary());
                     toast("setThumbColor(tertiary) → hasThumbColor()=" + materialSwitch.hasThumbColor()
                             + "，getThumbColor()=" + hex(materialSwitch.getThumbColor()));
                 }),
@@ -97,11 +97,11 @@ public class SwitchDemoActivity extends DemoActivity {
                 + "clear 后回到 outline。"), captionParams());
 
         final MaterialSwitch materialSwitch = createSwitch("Unselected thumb = tertiary");
-        materialSwitch.setUnselectedThumbColor(Imc.publicColorScheme.getTertiary());
+        materialSwitch.setUnselectedThumbColor(Lmc.publicColorScheme.getTertiary());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setUnselectedThumbColor(tertiary)", v -> {
-                    materialSwitch.setUnselectedThumbColor(Imc.publicColorScheme.getTertiary());
+                    materialSwitch.setUnselectedThumbColor(Lmc.publicColorScheme.getTertiary());
                     toast("setUnselectedThumbColor(tertiary) → hasUnselectedThumbColor()="
                             + materialSwitch.hasUnselectedThumbColor() + "，getUnselectedThumbColor()="
                             + hex(materialSwitch.getUnselectedThumbColor()));
@@ -122,11 +122,11 @@ public class SwitchDemoActivity extends DemoActivity {
 
         final MaterialSwitch materialSwitch = createSwitch("Track color = tertiaryContainer");
         materialSwitch.setChecked(true);
-        materialSwitch.setTrackColor(Imc.publicColorScheme.getTertiaryContainer());
+        materialSwitch.setTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setTrackColor(tertiaryContainer)", v -> {
-                    materialSwitch.setTrackColor(Imc.publicColorScheme.getTertiaryContainer());
+                    materialSwitch.setTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
                     toast("setTrackColor(tertiaryContainer) → hasTrackColor()=" + materialSwitch.hasTrackColor()
                             + "，getTrackColor()=" + hex(materialSwitch.getTrackColor()));
                 }),
@@ -143,11 +143,11 @@ public class SwitchDemoActivity extends DemoActivity {
                 + "clear 后回到 surfaceContainerHighest。"), captionParams());
 
         final MaterialSwitch materialSwitch = createSwitch("Unselected track = tertiaryContainer");
-        materialSwitch.setUnselectedTrackColor(Imc.publicColorScheme.getTertiaryContainer());
+        materialSwitch.setUnselectedTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setUnselectedTrackColor(tertiaryContainer)", v -> {
-                    materialSwitch.setUnselectedTrackColor(Imc.publicColorScheme.getTertiaryContainer());
+                    materialSwitch.setUnselectedTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
                     toast("setUnselectedTrackColor(tertiaryContainer) → hasUnselectedTrackColor()="
                             + materialSwitch.hasUnselectedTrackColor() + "，getUnselectedTrackColor()="
                             + hex(materialSwitch.getUnselectedTrackColor()));
@@ -166,11 +166,11 @@ public class SwitchDemoActivity extends DemoActivity {
                 + "clear 后回到 outline（禁用态描边固定用 outlineVariant，不受此覆盖影响）。"), captionParams());
 
         final MaterialSwitch materialSwitch = createSwitch("Track outline = tertiary");
-        materialSwitch.setTrackOutlineColor(Imc.publicColorScheme.getTertiary());
+        materialSwitch.setTrackOutlineColor(Lmc.publicColorScheme.getTertiary());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setTrackOutlineColor(tertiary)", v -> {
-                    materialSwitch.setTrackOutlineColor(Imc.publicColorScheme.getTertiary());
+                    materialSwitch.setTrackOutlineColor(Lmc.publicColorScheme.getTertiary());
                     toast("setTrackOutlineColor(tertiary) → hasTrackOutlineColor()="
                             + materialSwitch.hasTrackOutlineColor() + "，getTrackOutlineColor()="
                             + hex(materialSwitch.getTrackOutlineColor()));
@@ -192,7 +192,7 @@ public class SwitchDemoActivity extends DemoActivity {
         final MaterialSwitch materialSwitch = createSwitch("Icon + icon color = error");
         materialSwitch.setChecked(true);
         materialSwitch.setIcon(new Icon(android.R.drawable.ic_menu_add));
-        materialSwitch.setIconColor(Imc.publicColorScheme.getError());
+        materialSwitch.setIconColor(Lmc.publicColorScheme.getError());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setIcon(add)", v -> {
@@ -207,7 +207,7 @@ public class SwitchDemoActivity extends DemoActivity {
                             + "（拇指上不再绘制图标）");
                 }),
                 actionButton("setIconColor(error)", v -> {
-                    materialSwitch.setIconColor(Imc.publicColorScheme.getError());
+                    materialSwitch.setIconColor(Lmc.publicColorScheme.getError());
                     toast("setIconColor(error) → hasIconColor()=" + materialSwitch.hasIconColor()
                             + "，getIconColor()=" + hex(materialSwitch.getIconColor()));
                 }),
@@ -286,7 +286,7 @@ public class SwitchDemoActivity extends DemoActivity {
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setColorScheme(scheme)", v -> {
-                    materialSwitch.setColorScheme(Imc.publicColorScheme);
+                    materialSwitch.setColorScheme(Lmc.publicColorScheme);
                     toast("setColorScheme() → hasThumbColor()=" + materialSwitch.hasThumbColor()
                             + "，hasTrackColor()=" + materialSwitch.hasTrackColor()
                             + "，hasTrackWidthDp()=" + materialSwitch.hasTrackWidthDp()
@@ -300,13 +300,13 @@ public class SwitchDemoActivity extends DemoActivity {
     }
 
     private void applyAllOverrides(MaterialSwitch materialSwitch) {
-        materialSwitch.setThumbColor(Imc.publicColorScheme.getTertiary());
-        materialSwitch.setUnselectedThumbColor(Imc.publicColorScheme.getTertiary());
-        materialSwitch.setTrackColor(Imc.publicColorScheme.getTertiaryContainer());
-        materialSwitch.setUnselectedTrackColor(Imc.publicColorScheme.getTertiaryContainer());
-        materialSwitch.setTrackOutlineColor(Imc.publicColorScheme.getTertiary());
+        materialSwitch.setThumbColor(Lmc.publicColorScheme.getTertiary());
+        materialSwitch.setUnselectedThumbColor(Lmc.publicColorScheme.getTertiary());
+        materialSwitch.setTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
+        materialSwitch.setUnselectedTrackColor(Lmc.publicColorScheme.getTertiaryContainer());
+        materialSwitch.setTrackOutlineColor(Lmc.publicColorScheme.getTertiary());
         materialSwitch.setIcon(new Icon(android.R.drawable.ic_menu_add));
-        materialSwitch.setIconColor(Imc.publicColorScheme.getError());
+        materialSwitch.setIconColor(Lmc.publicColorScheme.getError());
         materialSwitch.setTrackWidthDp(72.0f);
         materialSwitch.setTrackHeightDp(36.0f);
         materialSwitch.setThumbRadiusDp(14.0f);

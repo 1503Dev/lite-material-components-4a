@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 
@@ -151,14 +151,14 @@ public class ButtonDemoActivity extends DemoActivity {
         content.addView(containerButton, itemParams());
         content.addView(row(
                 actionButton("setContainerColor(tertiary)", v -> {
-                    containerButton.setContainerColor(Imc.publicColorScheme.getTertiary());
+                    containerButton.setContainerColor(Lmc.publicColorScheme.getTertiary());
                     toast("setContainerColor(tertiary) → hasContainerColor()=" + containerButton.hasContainerColor()
                             + "，getContainerColor()=" + hex(containerButton.getContainerColor()));
                 }),
                 actionButton("clearContainerColor()", v -> {
                     containerButton.clearContainerColor();
                     toast("clearContainerColor() → hasContainerColor()=" + containerButton.hasContainerColor()
-                            + "，容器色回到角色色 primary " + hex(Imc.publicColorScheme.getPrimary()));
+                            + "，容器色回到角色色 primary " + hex(Lmc.publicColorScheme.getPrimary()));
                 })), rowParams());
     }
 
@@ -171,14 +171,14 @@ public class ButtonDemoActivity extends DemoActivity {
         content.addView(contentColorButton, itemParams());
         content.addView(row(
                 actionButton("setContentColor(tertiary)", v -> {
-                    contentColorButton.setContentColor(Imc.publicColorScheme.getTertiary());
+                    contentColorButton.setContentColor(Lmc.publicColorScheme.getTertiary());
                     toast("setContentColor(tertiary) → hasContentColor()=" + contentColorButton.hasContentColor()
                             + "，getContentColor()=" + hex(contentColorButton.getContentColor()));
                 }),
                 actionButton("clearContentColor()", v -> {
                     contentColorButton.clearContentColor();
                     toast("clearContentColor() → hasContentColor()=" + contentColorButton.hasContentColor()
-                            + "，文字色回到角色色 onPrimary " + hex(Imc.publicColorScheme.getOnPrimary()));
+                            + "，文字色回到角色色 onPrimary " + hex(Lmc.publicColorScheme.getOnPrimary()));
                 })), rowParams());
     }
 
@@ -192,7 +192,7 @@ public class ButtonDemoActivity extends DemoActivity {
         content.addView(iconColorButton, itemParams());
         content.addView(row(
                 actionButton("setIconColor(tertiary)", v -> {
-                    iconColorButton.setIconColor(Imc.publicColorScheme.getTertiary());
+                    iconColorButton.setIconColor(Lmc.publicColorScheme.getTertiary());
                     toast("setIconColor(tertiary) → hasIconColor()=" + iconColorButton.hasIconColor()
                             + "，getIconColor()=" + hex(iconColorButton.getIconColor()));
                 }),
@@ -252,11 +252,11 @@ public class ButtonDemoActivity extends DemoActivity {
         final MaterialButton strokeButton = createButton("Outlined");
         strokeButton.setStyle(ButtonStyle.OUTLINED);
         strokeButton.setStrokeWidthDp(3.0f);
-        strokeButton.setStrokeColor(Imc.publicColorScheme.getTertiary());
+        strokeButton.setStrokeColor(Lmc.publicColorScheme.getTertiary());
         content.addView(strokeButton, itemParams());
         content.addView(row(
                 actionButton("setStrokeColor(tertiary)", v -> {
-                    strokeButton.setStrokeColor(Imc.publicColorScheme.getTertiary());
+                    strokeButton.setStrokeColor(Lmc.publicColorScheme.getTertiary());
                     toast("setStrokeColor(tertiary) → hasStrokeColor()=" + strokeButton.hasStrokeColor()
                             + "，getStrokeColor()=" + hex(strokeButton.getStrokeColor()));
                 }),
@@ -299,11 +299,11 @@ public class ButtonDemoActivity extends DemoActivity {
                 + "clearRippleColor() 后回到默认的 10% 内容色。"), captionParams());
 
         final MaterialButton rippleButton = createButton("按住看涟漪");
-        rippleButton.setRippleColor(Imc.publicColorScheme.getTertiary());
+        rippleButton.setRippleColor(Lmc.publicColorScheme.getTertiary());
         content.addView(rippleButton, itemParams());
         content.addView(row(
                 actionButton("setRippleColor(tertiary)", v -> {
-                    rippleButton.setRippleColor(Imc.publicColorScheme.getTertiary());
+                    rippleButton.setRippleColor(Lmc.publicColorScheme.getTertiary());
                     toast("setRippleColor(tertiary) → hasRippleColor()=" + rippleButton.hasRippleColor()
                             + "，getRippleColor()=" + hex(rippleButton.getRippleColor()));
                 }),
@@ -321,10 +321,10 @@ public class ButtonDemoActivity extends DemoActivity {
 
         final MaterialButton allOverridesButton = createButton("All overrides");
         allOverridesButton.setIcon(new Icon(android.R.drawable.ic_menu_add));
-        allOverridesButton.setContainerColor(Imc.publicColorScheme.getTertiaryContainer());
-        allOverridesButton.setContentColor(Imc.publicColorScheme.getOnTertiaryContainer());
-        allOverridesButton.setIconColor(Imc.publicColorScheme.getError());
-        allOverridesButton.setRippleColor(Imc.publicColorScheme.getTertiary());
+        allOverridesButton.setContainerColor(Lmc.publicColorScheme.getTertiaryContainer());
+        allOverridesButton.setContentColor(Lmc.publicColorScheme.getOnTertiaryContainer());
+        allOverridesButton.setIconColor(Lmc.publicColorScheme.getError());
+        allOverridesButton.setRippleColor(Lmc.publicColorScheme.getTertiary());
         allOverridesButton.setIconSizeDp(28.0f);
         allOverridesButton.setElevationDp(6.0f);
         content.addView(allOverridesButton, itemParams());
@@ -344,16 +344,16 @@ public class ButtonDemoActivity extends DemoActivity {
                             + allOverridesButton.getElevationDp() + "dp）");
                 }),
                 actionButton("setColorScheme(scheme)", v -> {
-                    allOverridesButton.setColorScheme(Imc.publicColorScheme);
+                    allOverridesButton.setColorScheme(Lmc.publicColorScheme);
                     toast("setColorScheme(Imc.publicColorScheme) → 同样清除全部颜色覆盖，颜色回到角色色："
                             + "hasContainerColor()=" + allOverridesButton.hasContainerColor()
                             + "，getContainerColor()=" + hex(allOverridesButton.getContainerColor()));
                 }),
                 actionButton("重新覆盖颜色", v -> {
-                    allOverridesButton.setContainerColor(Imc.publicColorScheme.getTertiaryContainer());
-                    allOverridesButton.setContentColor(Imc.publicColorScheme.getOnTertiaryContainer());
-                    allOverridesButton.setIconColor(Imc.publicColorScheme.getError());
-                    allOverridesButton.setRippleColor(Imc.publicColorScheme.getTertiary());
+                    allOverridesButton.setContainerColor(Lmc.publicColorScheme.getTertiaryContainer());
+                    allOverridesButton.setContentColor(Lmc.publicColorScheme.getOnTertiaryContainer());
+                    allOverridesButton.setIconColor(Lmc.publicColorScheme.getError());
+                    allOverridesButton.setRippleColor(Lmc.publicColorScheme.getTertiary());
                     toast("重新 set 四类颜色覆盖，可再次对比 clear 的效果");
                 })), rowParams());
     }

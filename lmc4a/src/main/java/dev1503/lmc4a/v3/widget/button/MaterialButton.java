@@ -22,14 +22,14 @@ import android.view.ViewOutlineProvider;
 import android.widget.Button;
 
 import dev1503.lmc4a.Icon;
-import dev1503.lmc4a.v3.Imc;
+import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.ColorVariant;
 
 public class MaterialButton extends Button {
 
-    public static DynamicScheme publicColorScheme = Imc.publicColorScheme;
+    public static DynamicScheme publicColorScheme = Lmc.publicColorScheme;
 
     private static final float DEFAULT_VISUAL_HEIGHT_DP = 40.0f;
     private static final float DEFAULT_VERTICAL_INSET_DP = 4.0f;
@@ -578,7 +578,7 @@ public class MaterialButton extends Button {
 
     protected void refreshColorScheme() {
         if (colorScheme == null) {
-            colorScheme = Imc.publicColorScheme;
+            colorScheme = Lmc.publicColorScheme;
         }
         setTextColor(resolveTextColors());
         syncTextPaint();
