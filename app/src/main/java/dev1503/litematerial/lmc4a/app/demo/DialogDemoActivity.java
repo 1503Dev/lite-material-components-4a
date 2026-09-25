@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
@@ -17,7 +16,7 @@ import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.dialog.MaterialDialogBuilder;
 
-public class DialogDemoActivity extends Activity {
+public class DialogDemoActivity extends DemoActivity {
 
     private static final float CUSTOM_CORNER_RADIUS_DP = 8.0f;
 

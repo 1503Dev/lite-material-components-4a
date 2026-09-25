@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -13,7 +12,7 @@ import android.widget.TextView;
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.v3.widget.radiobutton.MaterialRadioButton;
 
-public class RadioButtonDemoActivity extends Activity {
+public class RadioButtonDemoActivity extends DemoActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

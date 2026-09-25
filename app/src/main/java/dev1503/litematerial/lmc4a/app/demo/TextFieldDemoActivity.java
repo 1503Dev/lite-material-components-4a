@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
@@ -21,7 +20,7 @@ import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.textfield.MaterialTextField;
 import dev1503.lmc4a.v3.widget.textfield.TextFieldStyle;
 
-public class TextFieldDemoActivity extends Activity {
+public class TextFieldDemoActivity extends DemoActivity {
 
     private static final int CLEAR_CONTAINER = 0;
     private static final int CLEAR_CONTENT = 1;

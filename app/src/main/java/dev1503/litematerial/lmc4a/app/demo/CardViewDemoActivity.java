@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -20,7 +19,7 @@ import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.cardview.MaterialCardView;
 
-public class CardViewDemoActivity extends Activity {
+public class CardViewDemoActivity extends DemoActivity {
 
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
 

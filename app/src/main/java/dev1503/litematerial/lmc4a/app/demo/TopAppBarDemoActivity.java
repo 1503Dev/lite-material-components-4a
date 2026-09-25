@@ -1,6 +1,5 @@
 package dev1503.litematerial.lmc4a.app.demo;
 
-import android.app.Activity;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
@@ -18,7 +17,7 @@ import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.topappbar.MaterialTopAppBar;
 import dev1503.lmc4a.v3.widget.topappbar.TopAppBarVariant;
 
-public class TopAppBarDemoActivity extends Activity {
+public class TopAppBarDemoActivity extends DemoActivity {
 
     private final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
 

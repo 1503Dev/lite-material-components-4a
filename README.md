@@ -19,7 +19,7 @@ A Material 3 component library compatible with Android 4.1
   * [x] TextField
   * [x] FloatingActionButton
   * [x] TopAppBar
-  * [ ] Checkbox
+  * [x] Checkbox
   * [ ] Chips
   * [ ] Drawer
   * [ ] ...
