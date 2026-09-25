@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.widget.ColorVariant;
 import dev1503.lmc4a.v3.widget.SizeVariant;
@@ -183,7 +184,7 @@ public class FloatingActionButtonDemoActivity extends DemoActivity {
     private MaterialFloatingActionButton createFab(SizeVariant variant, boolean withLabel) {
         MaterialFloatingActionButton fab = new MaterialFloatingActionButton(this);
         fab.setSize(variant);
-        fab.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        fab.setIcon(new Icon(android.R.drawable.ic_menu_add));
         if (withLabel) {
             fab.setText("Add");
         }

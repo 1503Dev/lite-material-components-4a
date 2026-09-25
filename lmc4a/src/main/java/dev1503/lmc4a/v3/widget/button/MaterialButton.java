@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.widget.Button;
 
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -52,7 +53,8 @@ public class MaterialButton extends Button {
     protected DynamicScheme colorScheme = publicColorScheme;
     protected ButtonStyle buttonStyle = ButtonStyle.FILLED;
     protected ColorVariant colorVariant = ColorVariant.PRIMARY;
-    protected Drawable icon;
+    protected Icon icon;
+    protected Drawable iconDrawable;
     protected boolean hasIconColor;
     protected int iconColor;
     protected boolean hasContainerColor;
@@ -198,16 +200,17 @@ public class MaterialButton extends Button {
         refreshColorScheme();
     }
 
-    public void setIcon(Drawable icon) {
+    public void setIcon(Icon icon) {
         this.icon = icon;
-        if (icon != null) {
-            icon.mutate();
+        iconDrawable = icon == null ? null : icon.resolve(getContext());
+        if (iconDrawable != null) {
+            iconDrawable = iconDrawable.mutate();
         }
         requestLayout();
         invalidate();
     }
 
-    public Drawable getIcon() {
+    public Icon getIcon() {
         return icon;
     }
 
@@ -440,7 +443,7 @@ public class MaterialButton extends Button {
         if (widthMode == View.MeasureSpec.EXACTLY) {
             return width;
         }
-        if (icon != null) {
+        if (iconDrawable != null) {
             width += (int) (dp(resolveIconSizeDp()) + dp(ICON_LABEL_GAP_DP) + 0.5f);
         }
         width = Math.max(width, (int) (dp(DEFAULT_MIN_WIDTH_DP) + 0.5f));
@@ -456,7 +459,7 @@ public class MaterialButton extends Button {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             drawPreLollipopContainer(canvas);
         }
-        if (icon != null) {
+        if (iconDrawable != null) {
             drawIconAndText(canvas);
         } else {
             super.onDraw(canvas);
@@ -506,14 +509,14 @@ public class MaterialButton extends Button {
     }
 
     private void drawIcon(Canvas canvas, float left, float centerY, float iconSize, int color) {
-        if (icon == null) {
+        if (iconDrawable == null) {
             return;
         }
         int l = (int) left;
         int t = (int) (centerY - iconSize / 2f);
-        icon.setBounds(l, t, (int) (l + iconSize + 0.5f), (int) (t + iconSize + 0.5f));
-        applyIconTint(icon, color);
-        icon.draw(canvas);
+        iconDrawable.setBounds(l, t, (int) (l + iconSize + 0.5f), (int) (t + iconSize + 0.5f));
+        applyIconTint(iconDrawable, color);
+        iconDrawable.draw(canvas);
     }
 
     private void setupIconTextPaint() {

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
@@ -183,26 +184,26 @@ public class SwitchDemoActivity extends DemoActivity {
     }
 
     private void iconSection(LinearLayout content) {
-        content.addView(caption("setIcon(Drawable) / getIcon() / hasIcon() / clearIcon()：设置选中态拇指图标，"
+        content.addView(caption("setIcon(Icon) / getIcon() / hasIcon() / clearIcon()：设置选中态拇指图标，"
                 + "图标按 16dp 居中绘制在拇指上，未选中态不绘制。"
                 + "setIconColor / getIconColor / clearIconColor：图标色默认角色色 onPrimaryContainer，"
                 + "下面覆盖为 error，clear 后回 onPrimaryContainer。"), captionParams());
 
         final MaterialSwitch materialSwitch = createSwitch("Icon + icon color = error");
         materialSwitch.setChecked(true);
-        materialSwitch.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        materialSwitch.setIcon(new Icon(android.R.drawable.ic_menu_add));
         materialSwitch.setIconColor(Imc.publicColorScheme.getError());
         content.addView(materialSwitch, itemParams());
         content.addView(row(
                 actionButton("setIcon(add)", v -> {
-                    materialSwitch.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+                    materialSwitch.setIcon(new Icon(android.R.drawable.ic_menu_add));
                     toast("setIcon(ic_menu_add) → hasIcon()=" + materialSwitch.hasIcon()
-                            + "，getIcon()=" + (materialSwitch.getIcon() == null ? "null" : "Drawable"));
+                            + "，getIcon()=" + (materialSwitch.getIcon() == null ? "null" : "Icon"));
                 }),
                 actionButton("clearIcon()", v -> {
                     materialSwitch.clearIcon();
                     toast("clearIcon() → hasIcon()=" + materialSwitch.hasIcon()
-                            + "，getIcon()=" + (materialSwitch.getIcon() == null ? "null" : "Drawable")
+                            + "，getIcon()=" + (materialSwitch.getIcon() == null ? "null" : "Icon")
                             + "（拇指上不再绘制图标）");
                 }),
                 actionButton("setIconColor(error)", v -> {
@@ -304,7 +305,7 @@ public class SwitchDemoActivity extends DemoActivity {
         materialSwitch.setTrackColor(Imc.publicColorScheme.getTertiaryContainer());
         materialSwitch.setUnselectedTrackColor(Imc.publicColorScheme.getTertiaryContainer());
         materialSwitch.setTrackOutlineColor(Imc.publicColorScheme.getTertiary());
-        materialSwitch.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        materialSwitch.setIcon(new Icon(android.R.drawable.ic_menu_add));
         materialSwitch.setIconColor(Imc.publicColorScheme.getError());
         materialSwitch.setTrackWidthDp(72.0f);
         materialSwitch.setTrackHeightDp(36.0f);

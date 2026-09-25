@@ -15,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -72,7 +73,8 @@ public class MaterialSwitch extends CompoundButton {
     private float trackWidthDp;
     private float trackHeightDp;
     private float thumbRadiusDp;
-    private Drawable icon;
+    private Icon icon;
+    private Drawable iconDrawable;
 
     public MaterialSwitch(Context context) {
         this(context, null);
@@ -229,12 +231,16 @@ public class MaterialSwitch extends CompoundButton {
         invalidate();
     }
 
-    public void setIcon(Drawable icon) {
+    public void setIcon(Icon icon) {
         this.icon = icon;
+        iconDrawable = icon == null ? null : icon.resolve(getContext());
+        if (iconDrawable != null) {
+            iconDrawable = iconDrawable.mutate();
+        }
         invalidate();
     }
 
-    public Drawable getIcon() {
+    public Icon getIcon() {
         return icon;
     }
 
@@ -244,6 +250,7 @@ public class MaterialSwitch extends CompoundButton {
 
     public void clearIcon() {
         this.icon = null;
+        iconDrawable = null;
         invalidate();
     }
 
@@ -515,15 +522,15 @@ public class MaterialSwitch extends CompoundButton {
     }
 
     private void drawIcon(Canvas canvas, float centerX, float centerY) {
-        if (icon == null || !isChecked()) {
+        if (iconDrawable == null || !isChecked()) {
             return;
         }
         float size = dp(ICON_SIZE_DP);
         float half = size / 2.0f;
-        icon.setBounds((int) (centerX - half + 0.5f), (int) (centerY - half + 0.5f),
+        iconDrawable.setBounds((int) (centerX - half + 0.5f), (int) (centerY - half + 0.5f),
                 (int) (centerX + half + 0.5f), (int) (centerY + half + 0.5f));
-        icon.setColorFilter(resolveIconColor(), PorterDuff.Mode.SRC_IN);
-        icon.draw(canvas);
+        iconDrawable.setColorFilter(resolveIconColor(), PorterDuff.Mode.SRC_IN);
+        iconDrawable.draw(canvas);
     }
 
     private void updateTrackMetrics() {

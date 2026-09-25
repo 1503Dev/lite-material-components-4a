@@ -2,7 +2,6 @@ package dev1503.lmc4a.v3.widget.navigationrail;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;

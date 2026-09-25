@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -76,8 +77,10 @@ public class MaterialTextField extends EditText {
     private boolean counterEnabled;
     private int counterMaxLength;
 
-    private Drawable leadingIcon;
-    private Drawable trailingIcon;
+    private Icon leadingIcon;
+    private Drawable leadingIconDrawable;
+    private Icon trailingIcon;
+    private Drawable trailingIconDrawable;
     private OnClickListener leadingIconClickListener;
     private OnClickListener trailingIconClickListener;
     private boolean leadingIconPressed;
@@ -526,31 +529,33 @@ public class MaterialTextField extends EditText {
 
     // ------------------------------------------------------------------ 图标
 
-    public void setLeadingIcon(Drawable leadingIcon) {
+    public void setLeadingIcon(Icon leadingIcon) {
         this.leadingIcon = leadingIcon;
-        if (leadingIcon != null) {
-            leadingIcon.mutate();
+        leadingIconDrawable = leadingIcon == null ? null : leadingIcon.resolve(getContext());
+        if (leadingIconDrawable != null) {
+            leadingIconDrawable = leadingIconDrawable.mutate();
         }
         updatePaddings();
         requestLayout();
         invalidate();
     }
 
-    public Drawable getLeadingIcon() {
+    public Icon getLeadingIcon() {
         return leadingIcon;
     }
 
-    public void setTrailingIcon(Drawable trailingIcon) {
+    public void setTrailingIcon(Icon trailingIcon) {
         this.trailingIcon = trailingIcon;
-        if (trailingIcon != null) {
-            trailingIcon.mutate();
+        trailingIconDrawable = trailingIcon == null ? null : trailingIcon.resolve(getContext());
+        if (trailingIconDrawable != null) {
+            trailingIconDrawable = trailingIconDrawable.mutate();
         }
         updatePaddings();
         requestLayout();
         invalidate();
     }
 
-    public Drawable getTrailingIcon() {
+    public Icon getTrailingIcon() {
         return trailingIcon;
     }
 
@@ -754,19 +759,19 @@ public class MaterialTextField extends EditText {
         float iconSize = dp(ICON_SIZE_DP);
         boolean rtl = isRtl();
 
-        if (leadingIcon != null) {
+        if (leadingIconDrawable != null) {
             float left = rtl ? getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize : dp(ICON_EDGE_PADDING_DP);
             if (leadingIconPressed) {
                 drawIconStateLayer(canvas, left, centerY, iconSize);
             }
-            drawIcon(canvas, leadingIcon, left, centerY, iconSize, resolveLeadingIconColor());
+            drawIcon(canvas, leadingIconDrawable, left, centerY, iconSize, resolveLeadingIconColor());
         }
-        if (trailingIcon != null) {
+        if (trailingIconDrawable != null) {
             float left = rtl ? dp(ICON_EDGE_PADDING_DP) : getWidth() - dp(ICON_EDGE_PADDING_DP) - iconSize;
             if (trailingIconPressed) {
                 drawIconStateLayer(canvas, left, centerY, iconSize);
             }
-            drawIcon(canvas, trailingIcon, left, centerY, iconSize, resolveTrailingIconColor());
+            drawIcon(canvas, trailingIconDrawable, left, centerY, iconSize, resolveTrailingIconColor());
         }
     }
 
@@ -866,10 +871,10 @@ public class MaterialTextField extends EditText {
         if (!initialized) {
             return false;
         }
-        float startPadding = leadingIcon != null
+        float startPadding = leadingIconDrawable != null
                 ? dp(ICON_EDGE_PADDING_DP) + dp(ICON_SIZE_DP) + dp(ICON_GAP_DP)
                 : dp(EDGE_PADDING_DP);
-        float endPadding = trailingIcon != null
+        float endPadding = trailingIconDrawable != null
                 ? dp(ICON_EDGE_PADDING_DP) + dp(ICON_SIZE_DP) + dp(ICON_GAP_DP)
                 : dp(EDGE_PADDING_DP);
         boolean rtl = isRtl();
@@ -989,9 +994,10 @@ public class MaterialTextField extends EditText {
             float y = event.getY();
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    boolean leadingDown = leadingIcon != null && leadingIconClickListener != null
+                    boolean leadingDown = leadingIconDrawable != null && leadingIconClickListener != null
                             && isInsideIconTouchArea(x, y, true);
-                    boolean trailingDown = !leadingDown && trailingIcon != null && trailingIconClickListener != null
+                    boolean trailingDown = !leadingDown && trailingIconDrawable != null
+                            && trailingIconClickListener != null
                             && isInsideIconTouchArea(x, y, false);
                     if (leadingDown || trailingDown) {
                         leadingIconPressed = leadingDown;
@@ -1033,12 +1039,12 @@ public class MaterialTextField extends EditText {
     }
 
     private boolean hasIconClickListener() {
-        return (leadingIcon != null && leadingIconClickListener != null)
-                || (trailingIcon != null && trailingIconClickListener != null);
+        return (leadingIconDrawable != null && leadingIconClickListener != null)
+                || (trailingIconDrawable != null && trailingIconClickListener != null);
     }
 
     private boolean isInsideIconTouchArea(float x, float y, boolean leading) {
-        Drawable icon = leading ? leadingIcon : trailingIcon;
+        Drawable icon = leading ? leadingIconDrawable : trailingIconDrawable;
         if (icon == null) {
             return false;
         }
