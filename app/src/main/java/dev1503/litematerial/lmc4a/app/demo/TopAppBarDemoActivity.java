@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
@@ -357,7 +358,7 @@ public class TopAppBarDemoActivity extends DemoActivity {
     private MaterialButton iconButton(int iconRes, CharSequence contentDescription) {
         MaterialButton button = new MaterialButton(this);
         button.setStyle(ButtonStyle.ICON);
-        button.setIcon(getResources().getDrawable(iconRes));
+        button.setIcon(new Icon(iconRes));
         button.setContentDescription(contentDescription);
         return button;
     }

@@ -395,14 +395,14 @@ public class MaterialFloatingActionButton extends MaterialButton {
     }
 
     private void drawIcon(Canvas canvas, float left, float centerY, float iconSize, int color) {
-        if (icon == null) {
+        if (iconDrawable == null) {
             return;
         }
         int l = (int) left;
         int t = (int) (centerY - iconSize / 2f);
-        icon.setBounds(l, t, (int) (l + iconSize + 0.5f), (int) (t + iconSize + 0.5f));
-        applyIconTint(icon, color);
-        icon.draw(canvas);
+        iconDrawable.setBounds(l, t, (int) (l + iconSize + 0.5f), (int) (t + iconSize + 0.5f));
+        applyIconTint(iconDrawable, color);
+        iconDrawable.draw(canvas);
     }
 
     private void setupLabelPaint() {

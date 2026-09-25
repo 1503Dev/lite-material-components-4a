@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.dialog.MaterialDialogBuilder;
@@ -66,7 +67,7 @@ public class DialogDemoActivity extends DemoActivity {
                 + "左右各留 24dp；标题为 null 时不会占位。"));
         content.addView(createButton("Custom View Dialog"), buttonParams());
 
-        content.addView(caption("图标对话框（新增）：setIcon(Drawable) 设置标题旁的图标，getIcon() 读回（未设置时为 null），"
+        content.addView(caption("图标对话框（新增）：setIcon(Icon) 设置标题旁的图标，getIcon() 读回（未设置时为 null），"
                 + "clearIcon() 清除；图标位由 AlertDialog 提供，不支持图标的平台实现会被忽略。"));
         content.addView(createButton("Icon Dialog"), buttonParams());
 
@@ -193,14 +194,14 @@ public class DialogDemoActivity extends DemoActivity {
     private void showIconDialog() {
         MaterialDialogBuilder builder = new MaterialDialogBuilder(this)
                 .setTitle("Icon Dialog")
-                .setMessage("setIcon(Drawable) 设置的图标显示在标题旁；clearIcon() 清除后 getIcon() 回到 null，"
+                .setMessage("setIcon(Icon) 设置的图标显示在标题旁；clearIcon() 清除后 getIcon() 回到 null，"
                         + "AlertDialog 会隐藏图标位。")
                 .setPositiveButton("OK", dismissListener)
-                .setIcon(getResources().getDrawable(android.R.drawable.ic_dialog_info));
+                .setIcon(new Icon(android.R.drawable.ic_dialog_info));
         String afterSet = builder.getIcon() == null ? "null" : "已设置图标";
         builder.clearIcon();
         String afterClear = builder.getIcon() == null ? "null" : "已设置图标";
-        builder.setIcon(getResources().getDrawable(android.R.drawable.ic_dialog_info));
+        builder.setIcon(new Icon(android.R.drawable.ic_dialog_info));
         toast("setIcon(...) → getIcon() = " + afterSet + "；clearIcon() → getIcon() = " + afterClear
                 + "；再 setIcon(...) 后弹出带图标的对话框");
         builder.show();

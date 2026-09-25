@@ -25,6 +25,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
@@ -56,6 +57,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private final Paint containerPaint = new Paint();
 
     private NavigationRailLabelVisibilityMode labelVisibilityMode = NavigationRailLabelVisibilityMode.AUTO;
+    private Icon icon;
     private Drawable iconDrawable;
     private float iconSizeDp = ICON_SIZE_DP;
     private boolean hasIconSizeDp;
@@ -302,16 +304,17 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         refreshRippleMask();
     }
 
-    public void setIcon(Drawable icon) {
-        iconDrawable = icon;
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+        iconDrawable = icon == null ? null : icon.resolve(getContext());
         if (iconDrawable != null) {
             iconDrawable = iconDrawable.mutate();
         }
         invalidate();
     }
 
-    public Drawable getIcon() {
-        return iconDrawable;
+    public Icon getIcon() {
+        return icon;
     }
 
     public void setItemData(MaterialNavigationRailItem data) {

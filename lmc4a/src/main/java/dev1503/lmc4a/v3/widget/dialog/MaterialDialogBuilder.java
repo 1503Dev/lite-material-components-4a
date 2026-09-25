@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
@@ -46,7 +47,7 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
     private View customView;
     private boolean cancelable = true;
 
-    private Drawable icon;
+    private Icon icon;
     private Integer containerColorOverride;
     private Integer titleColorOverride;
     private Integer messageColorOverride;
@@ -75,15 +76,12 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         return this;
     }
 
-    public MaterialDialogBuilder setIcon(Drawable icon) {
+    public MaterialDialogBuilder setIcon(Icon icon) {
         this.icon = icon;
-        if (icon != null) {
-            icon.mutate();
-        }
         return this;
     }
 
-    public Drawable getIcon() {
+    public Icon getIcon() {
         return icon;
     }
 
@@ -345,7 +343,10 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         builder.setView(wrapper);
 
         if (icon != null) {
-            builder.setIcon(icon);
+            Drawable iconDrawable = icon.resolve(getContext());
+            if (iconDrawable != null) {
+                builder.setIcon(iconDrawable.mutate());
+            }
         }
 
         if (!cancelable) {

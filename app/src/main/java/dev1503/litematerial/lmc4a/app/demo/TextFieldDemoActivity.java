@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicColor;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
@@ -79,7 +80,7 @@ public class TextFieldDemoActivity extends DemoActivity {
         rounded.setStyle(TextFieldStyle.OUTLINED);
         rounded.setLabel("圆角 16dp");
         rounded.setCornerRadiusDp(16f);
-        rounded.setLeadingIcon(getResources().getDrawable(android.R.drawable.ic_menu_search));
+        rounded.setLeadingIcon(new Icon(android.R.drawable.ic_menu_search));
         content.addView(rounded, fieldParams());
         content.addView(action("读取 getCornerRadiusDp()", new View.OnClickListener() {
             @Override
@@ -148,8 +149,8 @@ public class TextFieldDemoActivity extends DemoActivity {
         password.setLabel("密码");
         password.setInputType(android.text.InputType.TYPE_CLASS_TEXT
                 | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        password.setLeadingIcon(getResources().getDrawable(android.R.drawable.ic_lock_lock));
-        password.setTrailingIcon(getResources().getDrawable(android.R.drawable.ic_menu_view));
+        password.setLeadingIcon(new Icon(android.R.drawable.ic_lock_lock));
+        password.setTrailingIcon(new Icon(android.R.drawable.ic_menu_view));
         password.setOnLeadingIconClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -242,8 +243,8 @@ public class TextFieldDemoActivity extends DemoActivity {
         colorField.setPlaceholder("聚焦后显示占位色");
         colorField.setSupportingText("辅助文字色已覆盖");
         colorField.setText("内容文字色已覆盖");
-        colorField.setLeadingIcon(getResources().getDrawable(android.R.drawable.ic_menu_search));
-        colorField.setTrailingIcon(getResources().getDrawable(android.R.drawable.ic_menu_close_clear_cancel));
+        colorField.setLeadingIcon(new Icon(android.R.drawable.ic_menu_search));
+        colorField.setTrailingIcon(new Icon(android.R.drawable.ic_menu_close_clear_cancel));
         colorField.setContainerColor(role(dynamicColors.secondaryContainer()));
         colorField.setContentColor(role(dynamicColors.onSecondaryContainer()));
         colorField.setLabelColor(role(dynamicColors.tertiary()));

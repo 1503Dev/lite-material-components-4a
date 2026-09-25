@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.Imc;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
@@ -69,7 +70,7 @@ public class ButtonDemoActivity extends DemoActivity {
 
         final MaterialButton iconStyleButton = createButton("");
         iconStyleButton.setStyle(ButtonStyle.ICON);
-        iconStyleButton.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        iconStyleButton.setIcon(new Icon(android.R.drawable.ic_menu_add));
         content.addView(iconStyleButton, itemParams());
         content.addView(caption("setStyle(ICON)：40dp 方形 + 透明容器（同 TEXT）。"), captionParams());
 
@@ -109,35 +110,35 @@ public class ButtonDemoActivity extends DemoActivity {
     }
 
     private void iconSection(LinearLayout content) {
-        content.addView(caption("图标：setIcon(Drawable) / getIcon()；仅图标按钮默认 24dp、"
+        content.addView(caption("图标：setIcon(Icon) / getIcon()；仅图标按钮默认 24dp、"
                 + "图标 + 文字默认 18dp（可用 setIconSizeDp 覆盖）。"), captionParams());
 
         MaterialButton iconFilled = createButton("");
-        iconFilled.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        iconFilled.setIcon(new Icon(android.R.drawable.ic_menu_add));
         content.addView(iconFilled, itemParams());
 
         MaterialButton iconElevated = createButton("");
         iconElevated.setStyle(ButtonStyle.ELEVATED);
-        iconElevated.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_edit));
+        iconElevated.setIcon(new Icon(android.R.drawable.ic_menu_edit));
         content.addView(iconElevated, itemParams());
 
         MaterialButton iconOutlined = createButton("");
         iconOutlined.setStyle(ButtonStyle.OUTLINED);
-        iconOutlined.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_close_clear_cancel));
+        iconOutlined.setIcon(new Icon(android.R.drawable.ic_menu_close_clear_cancel));
         content.addView(iconOutlined, itemParams());
 
         MaterialButton iconTextFilled = createButton("Save");
-        iconTextFilled.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_save));
+        iconTextFilled.setIcon(new Icon(android.R.drawable.ic_menu_save));
         content.addView(iconTextFilled, itemParams());
 
         MaterialButton iconTextElevated = createButton("Edit");
         iconTextElevated.setStyle(ButtonStyle.ELEVATED);
-        iconTextElevated.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_edit));
+        iconTextElevated.setIcon(new Icon(android.R.drawable.ic_menu_edit));
         content.addView(iconTextElevated, itemParams());
 
         MaterialButton iconTextOutlined = createButton("Delete");
         iconTextOutlined.setStyle(ButtonStyle.OUTLINED);
-        iconTextOutlined.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_delete));
+        iconTextOutlined.setIcon(new Icon(android.R.drawable.ic_menu_delete));
         content.addView(iconTextOutlined, itemParams());
     }
 
@@ -187,7 +188,7 @@ public class ButtonDemoActivity extends DemoActivity {
                 + "clearIconColor() 后图标重新跟随文字色。"), captionParams());
 
         final MaterialButton iconColorButton = createButton("Save");
-        iconColorButton.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_save));
+        iconColorButton.setIcon(new Icon(android.R.drawable.ic_menu_save));
         content.addView(iconColorButton, itemParams());
         content.addView(row(
                 actionButton("setIconColor(tertiary)", v -> {
@@ -207,7 +208,7 @@ public class ButtonDemoActivity extends DemoActivity {
                 + "仅图标按钮默认 24dp。下面这枚覆盖为 36dp，clear 后回 24dp。"), captionParams());
 
         final MaterialButton iconOnlySizeButton = createButton("");
-        iconOnlySizeButton.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        iconOnlySizeButton.setIcon(new Icon(android.R.drawable.ic_menu_add));
         iconOnlySizeButton.setIconSizeDp(36.0f);
         content.addView(iconOnlySizeButton, itemParams());
         content.addView(row(
@@ -226,7 +227,7 @@ public class ButtonDemoActivity extends DemoActivity {
                 captionParams());
 
         final MaterialButton iconTextSizeButton = createButton("Save");
-        iconTextSizeButton.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_save));
+        iconTextSizeButton.setIcon(new Icon(android.R.drawable.ic_menu_save));
         iconTextSizeButton.setIconSizeDp(28.0f);
         content.addView(iconTextSizeButton, itemParams());
         content.addView(row(
@@ -319,7 +320,7 @@ public class ButtonDemoActivity extends DemoActivity {
                 + "setColorScheme(DynamicScheme) 在应用配色方案的同时也会清除全部颜色覆盖。"), captionParams());
 
         final MaterialButton allOverridesButton = createButton("All overrides");
-        allOverridesButton.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+        allOverridesButton.setIcon(new Icon(android.R.drawable.ic_menu_add));
         allOverridesButton.setContainerColor(Imc.publicColorScheme.getTertiaryContainer());
         allOverridesButton.setContentColor(Imc.publicColorScheme.getOnTertiaryContainer());
         allOverridesButton.setIconColor(Imc.publicColorScheme.getError());

@@ -18,6 +18,7 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
+import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
@@ -72,8 +73,8 @@ public class NavigationRailDemoActivity extends DemoActivity {
 
         content.addView(caption("水平 rail（默认方向 NavigationRailOrientation.HORIZONTAL）：高 72dp，"
                 + "4 个 item 平分宽度，由 MaterialNavigationRailItem 数据对象构建 —— "
-                + "setIcon(Drawable)（这里用 getResources().getDrawable(resId)）与 setText(CharSequence)，"
-                + "旧的 new Icon(resId) 已不再被接受。未覆盖任何颜色时：容器色为角色色 surfaceContainer、"
+                + "setIcon(Icon)（这里用 new Icon(resId)）与 setText(CharSequence)，"
+                + "统一使用 Icon 包装类型。未覆盖任何颜色时：容器色为角色色 surfaceContainer、"
                 + "选中项指示器 secondaryContainer、选中图标 / 文字 onSurface、未选中 onSurfaceVariant。"));
         horizontalRail = createDataRail(NavigationRailOrientation.HORIZONTAL);
         content.addView(horizontalRail, matchWrap());
@@ -391,13 +392,13 @@ public class NavigationRailDemoActivity extends DemoActivity {
             @Override
             public void onClick(View v) {
                 MaterialNavigationRailItem data = new MaterialNavigationRailItem();
-                data.setIcon(getResources().getDrawable(android.R.drawable.ic_menu_add));
+                data.setIcon(new Icon(android.R.drawable.ic_menu_add));
                 data.setText("Tab " + (verticalRail.getItemCount() + 1));
                 verticalRail.addItem(data);
                 toast("addItem(...) → getItemCount() = " + verticalRail.getItemCount()
                         + "，getItem(last).getIcon() = "
                         + (verticalRail.getItem(verticalRail.getItemCount() - 1).getIcon() != null
-                        ? "Drawable 已设置" : "null"));
+                        ? "Icon 已设置" : "null"));
             }
         });
         row.addView(add, controlParams());
@@ -426,7 +427,7 @@ public class NavigationRailDemoActivity extends DemoActivity {
                 toast(item == null || item.getItemData() == null
                         ? "getItem(0) == null"
                         : "getItem(0)：文字 " + item.getItemData().getText()
-                        + "、图标 " + (item.getItemData().getIcon() != null ? "Drawable" : "null")
+                        + "、图标 " + (item.getItemData().getIcon() != null ? "Icon" : "null")
                         + "、selected = " + (verticalRail.getSelectedItem() == item));
             }
         });
@@ -518,7 +519,7 @@ public class NavigationRailDemoActivity extends DemoActivity {
         rail.setOrientation(orientation);
         for (int i = 0; i < ITEM_LABELS.length; i++) {
             MaterialNavigationRailItem item = new MaterialNavigationRailItem();
-            item.setIcon(getResources().getDrawable(ICON_RES_IDS[i % ICON_RES_IDS.length]));
+            item.setIcon(new Icon(ICON_RES_IDS[i % ICON_RES_IDS.length]));
             item.setText(ITEM_LABELS[i % ITEM_LABELS.length]);
             rail.addItem(item);
         }
@@ -530,7 +531,7 @@ public class NavigationRailDemoActivity extends DemoActivity {
         rail.setOrientation(NavigationRailOrientation.HORIZONTAL);
         for (int i = 0; i < ITEM_LABELS.length; i++) {
             MaterialNavigationRailItemView item = new MaterialNavigationRailItemView(this);
-            item.setIcon(getResources().getDrawable(ICON_RES_IDS[i % ICON_RES_IDS.length]));
+            item.setIcon(new Icon(ICON_RES_IDS[i % ICON_RES_IDS.length]));
             item.setText(ITEM_LABELS[i % ITEM_LABELS.length]);
             if (i == 0) {
                 item.setContainerColor(colorPrimaryContainer);
