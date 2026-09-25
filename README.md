@@ -20,6 +20,8 @@ A Material 3 component library compatible with Android 4.1
   * [x] FloatingActionButton
   * [x] TopAppBar
   * [x] Checkbox
+  * [x] LinearProgressIndicator
+  * [x] CircularProgressIndicator
   * [ ] Chips
   * [ ] Drawer
   * [ ] ...
