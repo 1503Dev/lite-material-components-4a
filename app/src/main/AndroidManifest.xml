@@ -31,11 +31,15 @@
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
         <activity android:name=".demo.NavigationRailDemoActivity" />
+        <activity android:name=".demo.ChipDemoActivity" />
         <activity android:name=".demo.FloatingActionButtonDemoActivity" />
         <activity android:name=".demo.CardViewDemoActivity" />
         <activity android:name=".demo.TopAppBarDemoActivity" />
         <activity android:name=".demo.TextFieldDemoActivity"
             android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".V3Activity" />
+        <activity android:name=".V3EActivity" />
+        <activity android:name=".demo.v3e.ButtonDemoActivity" />
     </application>
 
 </manifest>
