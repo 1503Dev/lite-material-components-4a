@@ -36,6 +36,7 @@ public class FloatingActionButtonDemoActivity extends DemoActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         showHideSection(content);
+        disabledSection(content);
         bindSection(content, scrollView);
         sizeSection(content);
         iconSizeSection(content);
@@ -56,6 +57,18 @@ public class FloatingActionButtonDemoActivity extends DemoActivity {
         MaterialButton sizeButton = actionButton("getSize()", v -> toast("getSize()=" + fab.getSize()
                 + "（默认 SizeVariant.SMALL）"));
         content.addView(row(fab, hideButton, showButton, sizeButton), rowParams());
+    }
+
+    private void disabledSection(LinearLayout content) {
+        content.addView(caption("禁用态 setEnabled(false)"), captionParams());
+
+        final MaterialFloatingActionButton small = createFab(SizeVariant.SMALL, false);
+        small.setEnabled(false);
+        final MaterialFloatingActionButton large = createFab(SizeVariant.LARGE, false);
+        large.setEnabled(false);
+        final MaterialFloatingActionButton extended = createFab(SizeVariant.MEDIUM, true);
+        extended.setEnabled(false);
+        content.addView(row(small, large, extended), rowParams());
     }
 
     private void bindSection(LinearLayout content, final ScrollView scrollView) {

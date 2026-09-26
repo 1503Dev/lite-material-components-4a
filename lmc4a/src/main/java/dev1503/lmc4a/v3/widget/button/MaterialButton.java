@@ -66,6 +66,7 @@ public class MaterialButton extends Button {
     protected boolean hasRippleColor;
     protected int rippleColor;
     protected float strokeWidthDp = DEFAULT_STROKE_WIDTH_DP;
+    protected float appliedElevationDp;
     protected boolean hasElevationDp;
     protected float elevationDp;
     protected boolean hasIconSizeDp;
@@ -343,6 +344,9 @@ public class MaterialButton extends Button {
     }
 
     protected float resolveElevationDp() {
+        if (!isEnabled()) {
+            return 0.0f;
+        }
         return hasElevationDp ? elevationDp : resolveDefaultElevationDp();
     }
 
@@ -352,6 +356,7 @@ public class MaterialButton extends Button {
 
     protected void applyElevation() {
         float elevationDp = resolveElevationDp();
+        appliedElevationDp = elevationDp;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setElevation(dp(elevationDp));
         } else {
@@ -362,6 +367,16 @@ public class MaterialButton extends Button {
                     applyAlphaFraction(
                             dynamicColors.shadow().getArgb(colorScheme),
                             ELEVATED_SHADOW_ALPHA));
+        }
+    }
+
+    private void refreshElevation() {
+        if (dynamicColors == null || appliedElevationDp == resolveElevationDp()) {
+            return;
+        }
+        applyElevation();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            applyBackground();
         }
     }
 
@@ -570,6 +585,7 @@ public class MaterialButton extends Button {
     @Override
     protected void drawableStateChanged() {
         super.drawableStateChanged();
+        refreshElevation();
         if (hasStrokeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             applyBackground();
         }
