@@ -375,7 +375,7 @@ public class MaterialFloatingActionButton extends MaterialButton {
         float cy = getHeight() / 2f;
         int color = isEnabled()
                 ? resolveEnabledTextColor()
-                : applyAlphaFraction(resolveEnabledTextColor(), DISABLED_ICON_ALPHA);
+                : applyAlphaFraction(dynamicColors.onSurface().getArgb(colorScheme), DISABLED_ICON_ALPHA);
 
         if (hasLabel) {
             setupLabelPaint();
@@ -383,10 +383,10 @@ public class MaterialFloatingActionButton extends MaterialButton {
             float labelWidth = paint.measureText(s);
             float startX = cx - (iconSize + dp(resolveLabelGapDp()) + labelWidth) / 2f;
             drawIcon(canvas, startX, cy, iconSize, color);
-            paint.setColor(darken(resolveEnabledTextColor(), LABEL_DARKEN_FRACTION));
-            if (!isEnabled()) {
-                paint.setColor(applyAlphaFraction(paint.getColor(), DISABLED_ICON_ALPHA));
-            }
+            paint.setColor(isEnabled()
+                    ? darken(resolveEnabledTextColor(), LABEL_DARKEN_FRACTION)
+                    : applyAlphaFraction(dynamicColors.onSurface().getArgb(colorScheme),
+                            DISABLED_ICON_ALPHA));
             float baseline = cy - (paint.ascent() + paint.descent()) / 2f;
             canvas.drawText(s, startX + iconSize + dp(resolveLabelGapDp()), baseline, paint);
         } else {
