@@ -27,6 +27,7 @@
         <activity android:name=".demo.CheckBoxDemoActivity" />
         <activity android:name=".demo.ProgressIndicatorDemoActivity" />
         <activity android:name=".demo.CircularProgressIndicatorDemoActivity" />
+        <activity android:name=".demo.TabsDemoActivity" />
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
         <activity android:name=".demo.NavigationRailDemoActivity" />
