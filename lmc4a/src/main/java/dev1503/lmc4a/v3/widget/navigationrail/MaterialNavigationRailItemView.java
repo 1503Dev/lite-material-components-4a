@@ -63,7 +63,7 @@ public class MaterialNavigationRailItemView extends CompoundButton {
     private boolean hasIconSizeDp;
     private float labelTextSizeSp = LABEL_TEXT_SIZE_SP;
     private boolean hasLabelTextSizeSp;
-    private MaterialNavigationRailItem data;
+    private NavigationRailItem data;
     private float checkProgress;
     private SpringSimulation checkSpring;
     private ValueAnimator checkAnimator;
@@ -317,11 +317,11 @@ public class MaterialNavigationRailItemView extends CompoundButton {
         return icon;
     }
 
-    public void setItemData(MaterialNavigationRailItem data) {
+    public void setItemData(NavigationRailItem data) {
         this.data = data;
     }
 
-    public MaterialNavigationRailItem getItemData() {
+    public NavigationRailItem getItemData() {
         return data;
     }
 

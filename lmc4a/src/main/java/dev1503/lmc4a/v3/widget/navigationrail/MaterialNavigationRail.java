@@ -229,11 +229,11 @@ public class MaterialNavigationRail extends ViewGroup {
         return getItem(selectedIndex);
     }
 
-    public void addItem(MaterialNavigationRailItem item) {
+    public void addItem(NavigationRailItem item) {
         addItem(item, -1);
     }
 
-    public void addItem(MaterialNavigationRailItem item, int index) {
+    public void addItem(NavigationRailItem item, int index) {
         if (item == null) {
             return;
         }
@@ -267,7 +267,7 @@ public class MaterialNavigationRail extends ViewGroup {
         requestLayout();
     }
 
-    public void removeItem(MaterialNavigationRailItem item) {
+    public void removeItem(NavigationRailItem item) {
         if (item == null) {
             return;
         }

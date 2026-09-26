@@ -23,7 +23,7 @@ import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 import dev1503.lmc4a.v3.widget.navigationrail.MaterialNavigationRail;
-import dev1503.lmc4a.v3.widget.navigationrail.MaterialNavigationRailItem;
+import dev1503.lmc4a.v3.widget.navigationrail.NavigationRailItem;
 import dev1503.lmc4a.v3.widget.navigationrail.MaterialNavigationRailItemView;
 import dev1503.lmc4a.v3.widget.navigationrail.NavigationRailLabelVisibilityMode;
 import dev1503.lmc4a.v3.widget.navigationrail.NavigationRailOrientation;
@@ -391,7 +391,7 @@ public class NavigationRailDemoActivity extends DemoActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MaterialNavigationRailItem data = new MaterialNavigationRailItem();
+                NavigationRailItem data = new NavigationRailItem();
                 data.setIcon(new Icon(android.R.drawable.ic_menu_add));
                 data.setText("Tab " + (verticalRail.getItemCount() + 1));
                 verticalRail.addItem(data);
@@ -518,7 +518,7 @@ public class NavigationRailDemoActivity extends DemoActivity {
         MaterialNavigationRail rail = new MaterialNavigationRail(this);
         rail.setOrientation(orientation);
         for (int i = 0; i < ITEM_LABELS.length; i++) {
-            MaterialNavigationRailItem item = new MaterialNavigationRailItem();
+            NavigationRailItem item = new NavigationRailItem();
             item.setIcon(new Icon(ICON_RES_IDS[i % ICON_RES_IDS.length]));
             item.setText(ITEM_LABELS[i % ITEM_LABELS.length]);
             rail.addItem(item);

@@ -31,6 +31,7 @@
         <activity android:name=".demo.BottomSheetDemoActivity" />
         <activity android:name=".demo.DialogDemoActivity" />
         <activity android:name=".demo.NavigationRailDemoActivity" />
+        <activity android:name=".demo.ChipDemoActivity" />
         <activity android:name=".demo.FloatingActionButtonDemoActivity" />
         <activity android:name=".demo.CardViewDemoActivity" />
         <activity android:name=".demo.TopAppBarDemoActivity" />

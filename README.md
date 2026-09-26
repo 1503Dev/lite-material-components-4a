@@ -23,7 +23,10 @@ A Material 3 component library compatible with Android 4.1
   * [x] LinearProgressIndicator
   * [x] CircularProgressIndicator
   * [x] Tabs
-  * [ ] Chips
+  * [x] Chip
+  * [ ] PopupMenu
+  * [ ] BottomAppBar
+  * [ ] SnackBars
   * [ ] Drawer
   * [ ] ...
 * [ ] Material Design
