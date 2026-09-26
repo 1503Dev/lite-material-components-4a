@@ -22,6 +22,7 @@ A Material 3 component library compatible with Android 4.1
   * [x] Checkbox
   * [x] LinearProgressIndicator
   * [x] CircularProgressIndicator
+  * [x] Tabs
   * [ ] Chips
   * [ ] Drawer
   * [ ] ...
