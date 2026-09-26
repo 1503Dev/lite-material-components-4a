@@ -37,6 +37,9 @@
         <activity android:name=".demo.TopAppBarDemoActivity" />
         <activity android:name=".demo.TextFieldDemoActivity"
             android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".V3Activity" />
+        <activity android:name=".V3EActivity" />
+        <activity android:name=".demo.v3e.ButtonDemoActivity" />
     </application>
 
 </manifest>

@@ -3,78 +3,67 @@ package dev1503.litematerial.lmc4a.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import dev1503.lmc4a.v3.widget.button.MaterialButton;
+
 public class MainActivity extends Activity {
-
-    private static final String[] TITLES = {
-            "MaterialButton",
-            "MaterialSwitch",
-            "MaterialSlider",
-            "MaterialRangeSlider",
-            "MaterialRadioButton",
-            "MaterialCheckBox",
-            "MaterialChip",
-            "MaterialLinearProgressIndicator",
-            "MaterialCircularProgressIndicator",
-            "MaterialTabs",
-            "MaterialBottomSheet",
-            "MaterialDialog",
-            "MaterialNavigationRail",
-            "MaterialFloatingActionButton",
-            "MaterialCardView",
-            "MaterialTopAppBar",
-            "MaterialTextField",
-    };
-
-    private static final Class<?>[] DEMO_CLASSES = {
-            dev1503.litematerial.lmc4a.app.demo.ButtonDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.SwitchDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.SliderDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.RangeSliderDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.RadioButtonDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.CheckBoxDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.ChipDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.ProgressIndicatorDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.CircularProgressIndicatorDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.TabsDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.BottomSheetDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.DialogDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.NavigationRailDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.FloatingActionButtonDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.CardViewDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.TopAppBarDemoActivity.class,
-            dev1503.litematerial.lmc4a.app.demo.TextFieldDemoActivity.class,
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SchemeHelper.applyWindowBackground(this);
-        ListView listView = new ListView(this);
-        listView.setAdapter(new ArrayAdapter<String>(
-                this, android.R.layout.simple_list_item_1, TITLES) {
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setGravity(Gravity.CENTER);
+        int padding = dp(24.0f);
+        root.setPadding(padding, padding, padding, padding);
+
+        TextView title = new TextView(this);
+        title.setText("Lite Material Components 4A");
+        title.setTextSize(20.0f);
+        title.setGravity(Gravity.CENTER);
+        title.setTextColor(SchemeHelper.onBackgroundColor());
+        root.addView(title, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        MaterialButton v3Button = new MaterialButton(this);
+        v3Button.setText("Material 3");
+        v3Button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView textView = view.findViewById(android.R.id.text1);
-                textView.setTextColor(SchemeHelper.onBackgroundColor());
-                return view;
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, V3Activity.class));
             }
         });
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        LinearLayout.LayoutParams v3Params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        v3Params.topMargin = dp(24.0f);
+        root.addView(v3Button, v3Params);
+
+        MaterialButton v3eButton = new dev1503.lmc4a.v3e.widget.button.MaterialButton(this);
+        v3eButton.setText("Material 3 Expressive");
+        v3eButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(new Intent(MainActivity.this, DEMO_CLASSES[position]));
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, V3EActivity.class));
             }
         });
-        listView.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(listView);
+        LinearLayout.LayoutParams v3eParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        v3eParams.topMargin = dp(12.0f);
+        root.addView(v3eButton, v3eParams);
+
+        setContentView(root);
+    }
+
+    private int dp(float valueDp) {
+        return (int) (TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, valueDp, getResources().getDisplayMetrics()) + 0.5f);
     }
 }
