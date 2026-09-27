@@ -30,6 +30,7 @@ public class V3Activity extends Activity {
             "MaterialCardView",
             "MaterialTopAppBar",
             "MaterialTextField",
+            "MaterialCollapse",
     };
 
     private static final Class<?>[] DEMO_CLASSES = {
@@ -50,6 +51,7 @@ public class V3Activity extends Activity {
             dev1503.litematerial.lmc4a.app.demo.CardViewDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.TopAppBarDemoActivity.class,
             dev1503.litematerial.lmc4a.app.demo.TextFieldDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.CollapseDemoActivity.class,
     };
 
     @Override
