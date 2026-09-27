@@ -1,5 +1,6 @@
 package dev1503.litematerial.lmc4a.component.reference;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -20,5 +21,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        findViewById(R.id.btn_floating_window_demo).setOnClickListener(v ->
+                startActivity(new Intent(this, FloatingWindowDemoActivity.class)));
     }
 }

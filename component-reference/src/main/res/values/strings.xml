@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">ComponentReference</string>
+
+    <string name="open_floating_window_demo">悬浮窗 Demo</string>
+
+    <string name="floating_window_show">显示悬浮窗</string>
+    <string name="floating_window_hide">隐藏悬浮窗</string>
+    <string name="floating_window_toggle_blur">切换模糊</string>
+    <string name="floating_window_not_shown">悬浮窗未显示</string>
+    <string name="floating_window_blur_on">模糊已开启（API 31+ 生效）</string>
+    <string name="floating_window_blur_off">模糊已关闭</string>
+    <string name="floating_window_title">可拖动悬浮窗</string>
+    <string name="floating_window_body">拖动任意位置移动，背景为模糊效果。</string>
+    <string name="floating_window_drag_hint">点我试试</string>
+    <string name="floating_window_clicked">悬浮窗内容被点击</string>
+    <string name="floating_window_content_a">卡片 A — 用来观察模糊背景的文字内容，足够长才能看出模糊效果。</string>
+    <string name="floating_window_content_b">卡片 B — 把悬浮窗拖到这些卡片上方，窗后内容会被模糊。</string>
+    <string name="floating_window_content_button">Material 按钮</string>
+    <string name="floating_window_content_text">这是一段用于模糊演示的背景文字。滚动页面、拖动悬浮窗，观察 FLAG_BLUR_BEHIND 带来的实时背景模糊。在 Android 12（API 31）以下设备上会退化为半透明遮罩。需要同时在系统开发者选项中允许窗口模糊（或默认开启）。</string>
 </resources>

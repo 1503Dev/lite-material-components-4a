@@ -69,4 +69,11 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"/>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_floating_window_demo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/open_floating_window_demo"/>
+
 </LinearLayout>
