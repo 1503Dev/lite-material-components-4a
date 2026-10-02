@@ -1,4 +1,4 @@
-package dev1503.lmc4a.v3.widget.dialog;
+package dev1503.lmc4a.v3.dialog;
 
 import android.animation.ValueAnimator;
 import android.app.AlertDialog;

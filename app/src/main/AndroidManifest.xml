@@ -38,6 +38,7 @@
         <activity android:name=".demo.TextFieldDemoActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".demo.CollapseDemoActivity" />
+        <activity android:name=".demo.DrawerDemoActivity" />
         <activity android:name=".V3Activity" />
         <activity android:name=".V3EActivity" />
         <activity android:name=".demo.v3e.ButtonDemoActivity" />

@@ -25,10 +25,10 @@ A Material 3 component library compatible with Android 4.1
   * [x] Tabs
   * [x] Chip
   * [x] Collapse
+  * [x] Drawer
   * [ ] PopupMenu
   * [ ] BottomAppBar
   * [ ] SnackBars
-  * [ ] Drawer
   * [ ] ...
 * [ ] Material Design
   * [ ] Button

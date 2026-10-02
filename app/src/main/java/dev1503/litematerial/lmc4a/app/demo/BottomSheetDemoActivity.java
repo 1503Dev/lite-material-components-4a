@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
-import dev1503.lmc4a.v3.widget.bottomsheet.MaterialBottomSheet;
+import dev1503.lmc4a.v3.bottomsheet.MaterialBottomSheet;
 import dev1503.lmc4a.v3.widget.button.ButtonStyle;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
 
