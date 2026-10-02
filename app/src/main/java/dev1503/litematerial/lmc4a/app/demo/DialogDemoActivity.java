@@ -15,7 +15,7 @@ import dev1503.litematerial.lmc4a.app.SchemeHelper;
 import dev1503.lmc4a.Icon;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
 import dev1503.lmc4a.v3.widget.button.MaterialButton;
-import dev1503.lmc4a.v3.widget.dialog.MaterialDialogBuilder;
+import dev1503.lmc4a.v3.dialog.MaterialDialogBuilder;
 
 public class DialogDemoActivity extends DemoActivity {
 

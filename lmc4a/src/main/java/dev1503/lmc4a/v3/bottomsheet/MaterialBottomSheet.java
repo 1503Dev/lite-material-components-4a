@@ -1,4 +1,4 @@
-package dev1503.lmc4a.v3.widget.bottomsheet;
+package dev1503.lmc4a.v3.bottomsheet;
 
 import android.animation.ValueAnimator;
 import android.app.Dialog;
