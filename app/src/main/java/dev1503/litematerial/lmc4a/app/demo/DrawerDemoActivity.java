@@ -50,7 +50,7 @@ public class DrawerDemoActivity extends DemoActivity {
         content.addView(action("open(DrawerOrientation.END)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawer.open(DrawerOrientation.END);
+                drawer.open(DrawerOrientation.RIGHT);
                 updateStatus();
             }
         }), buttonParams());
