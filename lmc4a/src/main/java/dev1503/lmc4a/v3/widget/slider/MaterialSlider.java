@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 import android.widget.SeekBar;
 
 import dev1503.lmc4a.v3.Lmc;
@@ -59,6 +60,20 @@ public class MaterialSlider extends SeekBar {
 
     public DynamicScheme getColorScheme() {
         return colorScheme;
+    }
+
+    protected SliderPopup createValueIndicator() {
+        return h.createPopup(this);
+    }
+
+    protected float popupThumbRadiusDp() {
+        return h.getThumbRadiusDp();
+    }
+
+    protected void refreshValueIndicatorMetrics() {
+        if (popup != null) {
+            popup.setThumbRadiusDp(popupThumbRadiusDp());
+        }
     }
 
     public void setValueIndicatorEnabled(boolean enabled) {
@@ -127,7 +142,14 @@ public class MaterialSlider extends SeekBar {
     }
 
     public int getInactiveTrackColor() {
-        return h.getTrackColor();
+        if (h.hasTrackColor()) {
+            return h.getTrackColor();
+        }
+        return defaultInactiveTrackColor();
+    }
+
+    protected int defaultInactiveTrackColor() {
+        return h.trackColorValue();
     }
 
     public void clearInactiveTrackColor() {
@@ -141,7 +163,18 @@ public class MaterialSlider extends SeekBar {
     }
 
     public int getDisabledTrackColor() {
-        return h.getDisabledTrackColor();
+        if (h.hasDisabledTrackColor()) {
+            return h.getDisabledTrackColor();
+        }
+        return defaultDisabledTrackColor();
+    }
+
+    protected int defaultDisabledTrackColor() {
+        return h.disabledTrackColorValue();
+    }
+
+    protected boolean hasDisabledTrackColor() {
+        return h.hasDisabledTrackColor();
     }
 
     public void clearDisabledTrackColor() {
@@ -155,7 +188,14 @@ public class MaterialSlider extends SeekBar {
     }
 
     public int getDisabledThumbColor() {
-        return h.getDisabledThumbColor();
+        if (h.hasDisabledThumbColor() || h.hasDisabledTrackColor()) {
+            return h.getDisabledThumbColor();
+        }
+        return defaultDisabledThumbColor();
+    }
+
+    protected int defaultDisabledThumbColor() {
+        return h.disabledTrackColorValue();
     }
 
     public void clearDisabledThumbColor() {
@@ -165,12 +205,7 @@ public class MaterialSlider extends SeekBar {
 
     public void setThumbRadiusDp(float radiusDp) {
         h.setThumbRadiusDp(radiusDp);
-        if (popup != null) {
-            popup.setThumbRadiusDp(h.getThumbRadiusDp());
-        }
-        h.updateTrackBounds(this, getWidth(), getHeight());
-        requestLayout();
-        invalidate();
+        onThumbMetricsChanged();
     }
 
     public float getThumbRadiusDp() {
@@ -179,17 +214,73 @@ public class MaterialSlider extends SeekBar {
 
     public void clearThumbRadiusDp() {
         h.clearThumbRadiusDp();
-        if (popup != null) {
-            popup.setThumbRadiusDp(h.getThumbRadiusDp());
-        }
-        h.updateTrackBounds(this, getWidth(), getHeight());
-        requestLayout();
+        onThumbMetricsChanged();
+    }
+
+    public void setHandleWidthDp(float widthDp) {
+        h.setThumbWidthDp(widthDp);
+        onThumbMetricsChanged();
+    }
+
+    public float getHandleWidthDp() {
+        return h.getThumbWidthDp();
+    }
+
+    public void clearHandleWidthDp() {
+        h.clearThumbWidthDp();
+        onThumbMetricsChanged();
+    }
+
+    public void setPressedHandleWidthDp(float widthDp) {
+        h.setPressedThumbWidthDp(widthDp);
+        updateBounds();
+        invalidate();
+    }
+
+    public float getPressedHandleWidthDp() {
+        return h.getPressedThumbWidthDp();
+    }
+
+    public void clearPressedHandleWidthDp() {
+        h.clearPressedThumbWidthDp();
+        updateBounds();
+        invalidate();
+    }
+
+    public void setHandleHeightDp(float heightDp) {
+        h.setThumbHeightDp(heightDp);
+        refreshValueIndicatorMetrics();
+        invalidate();
+    }
+
+    public float getHandleHeightDp() {
+        return h.getThumbHeightDp();
+    }
+
+    public void clearHandleHeightDp() {
+        h.clearThumbHeightDp();
+        refreshValueIndicatorMetrics();
+        invalidate();
+    }
+
+    public void setTrackGapDp(float gapDp) {
+        h.setTrackGapDp(gapDp);
+        invalidate();
+    }
+
+    public float getTrackGapDp() {
+        return h.getTrackGapDp();
+    }
+
+    public void clearTrackGapDp() {
+        h.clearTrackGapDp();
         invalidate();
     }
 
     public void setTrackHeightDp(float heightDp) {
         h.setTrackHeightDp(heightDp);
-        h.updateTrackBounds(this, getWidth(), getHeight());
+        updateBounds();
+        requestLayout();
         invalidate();
     }
 
@@ -199,12 +290,22 @@ public class MaterialSlider extends SeekBar {
 
     public void clearTrackHeightDp() {
         h.clearTrackHeightDp();
-        h.updateTrackBounds(this, getWidth(), getHeight());
+        updateBounds();
+        requestLayout();
         invalidate();
     }
 
     public float getTrackWidthDp() {
         return h.getTrackWidthDp(this);
+    }
+
+    private void onThumbMetricsChanged() {
+        if (popup != null) {
+            popup.setThumbRadiusDp(popupThumbRadiusDp());
+        }
+        updateBounds();
+        requestLayout();
+        invalidate();
     }
 
     public void setMinValue(float min) {
@@ -266,7 +367,7 @@ public class MaterialSlider extends SeekBar {
     public void setProgress(int progress) {
         super.setProgress(progress);
         if (h != null && popup != null && popup.isShowing()) {
-            popup.update(thumbCenterX, h.formatProgress(getValue()));
+            popup.update(getThumbXFromProgress(), h.formatProgress(getValue()));
         }
     }
 
@@ -296,7 +397,15 @@ public class MaterialSlider extends SeekBar {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        this.h.updateTrackBounds(this, w, h);
+        updateBounds();
+    }
+
+    private void updateBounds() {
+        h.updateTrackBounds(this, getWidth(), getHeight(), trackEdgeInset(h.travelInsetPx(this)));
+    }
+
+    protected float trackEdgeInset(float travelInsetPx) {
+        return travelInsetPx;
     }
 
     @Override
@@ -308,12 +417,32 @@ public class MaterialSlider extends SeekBar {
 
         h.drawCircularMask(canvas, this, enabled, thumbCenterX, centerY, SliderHelper.MASK_0);
         drawTrack(canvas, enabled, fraction);
-        h.drawThumb(canvas, this, enabled, thumbCenterX, centerY);
+        float thumbWidth = h.currentThumbWidthPx(this);
+        float thumbHeight = SliderHelper.dp(this, h.getThumbHeightDp());
+        h.drawThumb(canvas, this, enabled, thumbCenterX, centerY, thumbWidth, thumbHeight, true);
     }
 
     private void drawTrack(Canvas canvas, boolean enabled, float fraction) {
         float trackHeight = SliderHelper.dp(this, h.getTrackHeightDp());
         float trackRadius = trackHeight / 2.0f;
+        float gap = SliderHelper.dp(this, h.getTrackGapDp());
+
+        if (gap > 0.0f) {
+            float half = h.currentThumbWidthPx(this) / 2.0f;
+            float activeEnd = thumbCenterX - half - gap;
+            float inactiveStart = thumbCenterX + half + gap;
+            if (inactiveStart < h.trackRight) {
+                h.trackRect.set(inactiveStart, h.trackTop, h.trackRight, h.trackBottom);
+                h.trackPaint.setColor(h.getTrackColor());
+                canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
+            }
+            if (fraction > 0 && activeEnd > h.trackLeft) {
+                h.trackRect.set(h.trackLeft, h.trackTop, activeEnd, h.trackBottom);
+                h.trackPaint.setColor(enabled ? h.getProgressColor() : h.getDisabledTrackColor());
+                canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
+            }
+            return;
+        }
 
         h.trackRect.set(h.trackLeft, h.trackTop, h.trackRight, h.trackBottom);
         h.trackPaint.setColor(h.getTrackColor());
@@ -326,9 +455,37 @@ public class MaterialSlider extends SeekBar {
         }
     }
 
-    private int getThumbXFromProgress() {
+    protected int getThumbXFromProgress() {
         float fraction = getMax() > 0 ? (float) getProgress() / getMax() : 0f;
+        return handleCenterX(fraction);
+    }
+
+    protected int handleCenterX(float fraction) {
         return h.centerXFromFraction(fraction);
+    }
+
+    protected int getTrackLeft() {
+        return h.trackLeft;
+    }
+
+    protected int getTrackRight() {
+        return h.trackRight;
+    }
+
+    protected int getTrackCenterY() {
+        return h.trackTop + (int) (SliderHelper.dp(this, h.getTrackHeightDp()) / 2.0f);
+    }
+
+    protected float currentHandleWidthPx() {
+        return h.currentThumbWidthPx(this);
+    }
+
+    protected float dp(float valueDp) {
+        return SliderHelper.dp(this, valueDp);
+    }
+
+    protected static int applyAlpha(int argb, float alphaFraction) {
+        return SliderHelper.applyAlphaFraction(argb, alphaFraction);
     }
 
     @Override
@@ -336,17 +493,21 @@ public class MaterialSlider extends SeekBar {
         if (!isEnabled()) {
             return super.onTouchEvent(event);
         }
-        boolean result = super.onTouchEvent(event);
+        boolean result = delegatesDragToSystem() ? super.onTouchEvent(event) : true;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 isTouching = true;
-                h.startMaskAnimation(SliderHelper.MASK_0, this);
+                requestParentDisallowInterceptTouchEvent(true);
+                onInteractionStart();
                 setProgressFromTouch(event.getX());
                 lastNotifiedValue = getValue();
                 notifyValueChangeStart();
                 showPopup();
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (!delegatesDragToSystem()) {
+                    setProgressFromTouch(event.getX());
+                }
                 if (popup != null && popup.isShowing()) {
                     int cx = getThumbXFromProgress();
                     popup.update(cx, h.formatProgress(getValue()));
@@ -356,12 +517,38 @@ public class MaterialSlider extends SeekBar {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 isTouching = false;
-                h.stopMaskAnimation(SliderHelper.MASK_0, this);
+                requestParentDisallowInterceptTouchEvent(false);
+                onInteractionEnd();
                 hidePopup();
                 notifyValueChangeFinished();
                 break;
         }
         return result;
+    }
+
+    protected boolean delegatesDragToSystem() {
+        return true;
+    }
+
+    protected void onInteractionStart() {
+        h.startMaskAnimation(SliderHelper.MASK_0, this);
+        animateHandlePress(1f);
+    }
+
+    protected void onInteractionEnd() {
+        h.stopMaskAnimation(SliderHelper.MASK_0, this);
+        animateHandlePress(0f);
+    }
+
+    protected void animateHandlePress(float target) {
+        h.startPressAnimation(this, target);
+    }
+
+    private void requestParentDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        ViewParent parent = getParent();
+        if (parent != null) {
+            parent.requestDisallowInterceptTouchEvent(disallowIntercept);
+        }
     }
 
     private void setProgressFromTouch(float touchX) {
@@ -370,19 +557,20 @@ public class MaterialSlider extends SeekBar {
         invalidate();
     }
 
-    private void showPopup() {
+    protected void showPopup() {
         if (!h.valueIndicatorEnabled) {
             return;
         }
         if (popup == null) {
-            popup = h.createPopup(this);
+            popup = createValueIndicator();
         }
+        popup.setThumbRadiusDp(popupThumbRadiusDp());
         int cx = getThumbXFromProgress();
-        int cy = h.trackTop + (int) (SliderHelper.dp(this, h.getTrackHeightDp()) / 2f);
+        int cy = getTrackCenterY();
         popup.show(this, cx, cy, h.formatProgress(getValue()));
     }
 
-    private void hidePopup() {
+    protected void hidePopup() {
         if (popup != null && popup.isShowing()) {
             popup.dismiss();
         }
@@ -390,7 +578,7 @@ public class MaterialSlider extends SeekBar {
 
     private void updatePopupText() {
         if (popup != null && popup.isShowing()) {
-            popup.update(thumbCenterX, h.formatProgress(getValue()));
+            popup.update(getThumbXFromProgress(), h.formatProgress(getValue()));
         }
     }
 
@@ -428,6 +616,8 @@ public class MaterialSlider extends SeekBar {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         h.cancelAllMaskAnimations();
+        h.cancelPressAnimation();
+        h.pressProgress = 0f;
         hidePopup();
     }
 }

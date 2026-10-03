@@ -145,13 +145,40 @@ public class MaterialRangeSlider extends MaterialSlider {
         h.drawCircularMask(canvas, this, enabled, lowCenterX, centerY, SliderHelper.MASK_0);
         h.drawCircularMask(canvas, this, enabled, highCenterX, centerY, SliderHelper.MASK_1);
         drawTrack(canvas, enabled, lowCenterX, highCenterX);
-        h.drawThumb(canvas, this, enabled, lowCenterX, centerY);
-        h.drawThumb(canvas, this, enabled, highCenterX, centerY);
+        float thumbWidth = h.currentThumbWidthPx(this);
+        float thumbHeight = SliderHelper.dp(this, h.getThumbHeightDp());
+        h.drawThumb(canvas, this, enabled, lowCenterX, centerY, thumbWidth, thumbHeight, true);
+        h.drawThumb(canvas, this, enabled, highCenterX, centerY, thumbWidth, thumbHeight, true);
     }
 
     private void drawTrack(Canvas canvas, boolean enabled, int lowCenterX, int highCenterX) {
         float trackHeight = SliderHelper.dp(this, h.getTrackHeightDp());
         float trackRadius = trackHeight / 2.0f;
+        float gap = SliderHelper.dp(this, h.getTrackGapDp());
+
+        if (gap > 0.0f) {
+            float half = h.currentThumbWidthPx(this) / 2.0f + gap;
+            float lowEnd = lowCenterX - half;
+            float lowStart = lowCenterX + half;
+            float highEnd = highCenterX - half;
+            float highStart = highCenterX + half;
+            if (lowEnd > h.trackLeft) {
+                h.trackRect.set(h.trackLeft, h.trackTop, lowEnd, h.trackBottom);
+                h.trackPaint.setColor(h.getTrackColor());
+                canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
+            }
+            if (h.trackRight > highStart) {
+                h.trackRect.set(highStart, h.trackTop, h.trackRight, h.trackBottom);
+                h.trackPaint.setColor(h.getTrackColor());
+                canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
+            }
+            if (highEnd > lowStart) {
+                h.trackRect.set(lowStart, h.trackTop, highEnd, h.trackBottom);
+                h.trackPaint.setColor(enabled ? h.getProgressColor() : h.getDisabledTrackColor());
+                canvas.drawRoundRect(h.trackRect, trackRadius, trackRadius, h.trackPaint);
+            }
+            return;
+        }
 
         h.trackRect.set(h.trackLeft, h.trackTop, h.trackRight, h.trackBottom);
         h.trackPaint.setColor(h.getTrackColor());

@@ -51,6 +51,7 @@ public class MaterialSwitch extends CompoundButton {
     private float pressProgress;
     private int currentTrackColor;
     private int currentHandleColor;
+    private int currentOutlineColor;
     private ValueAnimator handleAnimator;
     private ValueAnimator pressAnimator;
     private ValueAnimator colorAnimator;
@@ -99,6 +100,7 @@ public class MaterialSwitch extends CompoundButton {
         setTextColor(resolveTextColor());
         currentTrackColor = resolveTrackColor();
         currentHandleColor = resolveHandleColor();
+        currentOutlineColor = resolveOutlineColor();
     }
 
     public void setColorScheme(DynamicScheme colorScheme) {
@@ -122,6 +124,7 @@ public class MaterialSwitch extends CompoundButton {
         }
         currentTrackColor = resolveTrackColor();
         currentHandleColor = resolveHandleColor();
+        currentOutlineColor = resolveOutlineColor();
         requestLayout();
         invalidate();
     }
@@ -213,6 +216,7 @@ public class MaterialSwitch extends CompoundButton {
     public void setTrackOutlineColor(int trackOutlineColor) {
         this.trackOutlineColor = trackOutlineColor;
         this.hasTrackOutlineColor = true;
+        currentOutlineColor = resolveOutlineColor();
         invalidate();
     }
 
@@ -228,6 +232,7 @@ public class MaterialSwitch extends CompoundButton {
 
     public void clearTrackOutlineColor() {
         hasTrackOutlineColor = false;
+        currentOutlineColor = resolveOutlineColor();
         invalidate();
     }
 
@@ -363,6 +368,7 @@ public class MaterialSwitch extends CompoundButton {
             handleProgress = checked ? 1.0f : 0.0f;
             currentTrackColor = resolveTrackColor();
             currentHandleColor = resolveHandleColor();
+            currentOutlineColor = resolveOutlineColor();
             invalidate();
         }
     }
@@ -401,21 +407,15 @@ public class MaterialSwitch extends CompoundButton {
         rectF.set(0.0f, trackTop, trackWidth, trackTop + trackHeight);
         paint.setColor(currentTrackColor);
         canvas.drawRoundRect(rectF, trackRadius, trackRadius, paint);
-        if (!isChecked()) {
-            float strokeWidth = dp(TRACK_OUTLINE_DP);
-            float strokeHalf = strokeWidth / 2.0f;
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(strokeWidth);
-            if (isEnabled()) {
-                paint.setColor(resolveTrackOutlineColor());
-            } else {
-                paint.setColor(dynamicColors.outlineVariant().getArgb(colorScheme));
-            }
-            rectF.set(strokeHalf, trackTop + strokeHalf,
-                    trackWidth - strokeHalf, trackTop + trackHeight - strokeHalf);
-            canvas.drawRoundRect(rectF, trackRadius - strokeHalf, trackRadius - strokeHalf, paint);
-            paint.setStyle(Paint.Style.FILL);
-        }
+        float strokeWidth = dp(TRACK_OUTLINE_DP);
+        float strokeHalf = strokeWidth / 2.0f;
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(strokeWidth);
+        paint.setColor(currentOutlineColor);
+        rectF.set(strokeHalf, trackTop + strokeHalf,
+                trackWidth - strokeHalf, trackTop + trackHeight - strokeHalf);
+        canvas.drawRoundRect(rectF, trackRadius - strokeHalf, trackRadius - strokeHalf, paint);
+        paint.setStyle(Paint.Style.FILL);
         rectF.set(handleCenterX - handleRadius, centerY - handleRadius,
                 handleCenterX + handleRadius, centerY + handleRadius);
         paint.setColor(currentHandleColor);
@@ -477,17 +477,15 @@ public class MaterialSwitch extends CompoundButton {
             handleProgress = target;
             currentTrackColor = resolveTrackColor();
             currentHandleColor = resolveHandleColor();
+            currentOutlineColor = resolveOutlineColor();
             invalidate();
             return;
         }
         handleAnimator = ValueAnimator.ofFloat(handleProgress, target);
         handleAnimator.setDuration((long) HANDLE_TRAVEL_DURATION_MS);
-        handleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                handleProgress = (float) animation.getAnimatedValue();
-                invalidate();
-            }
+        handleAnimator.addUpdateListener(animation -> {
+            handleProgress = (float) animation.getAnimatedValue();
+            invalidate();
         });
         handleAnimator.start();
         animateColorTransition(oldTrackColor, oldHandleColor);
@@ -500,23 +498,25 @@ public class MaterialSwitch extends CompoundButton {
         }
         final int endTrack = resolveTrackColor();
         final int endHandle = resolveHandleColor();
+        final int startOutline = currentOutlineColor;
+        final int endOutline = resolveOutlineColor();
         currentTrackColor = startTrack;
         currentHandleColor = startHandle;
-        if (startTrack == endTrack && startHandle == endHandle) {
+        currentOutlineColor = startOutline;
+        if (startTrack == endTrack && startHandle == endHandle && startOutline == endOutline) {
             currentTrackColor = endTrack;
             currentHandleColor = endHandle;
+            currentOutlineColor = endOutline;
             return;
         }
         colorAnimator = ValueAnimator.ofFloat(0f, 1f);
         colorAnimator.setDuration((long) HANDLE_TRAVEL_DURATION_MS);
-        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float fraction = animation.getAnimatedFraction();
-                currentTrackColor = (int) new ArgbEvaluator().evaluate(fraction, startTrack, endTrack);
-                currentHandleColor = (int) new ArgbEvaluator().evaluate(fraction, startHandle, endHandle);
-                invalidate();
-            }
+        colorAnimator.addUpdateListener(animation -> {
+            float fraction = animation.getAnimatedFraction();
+            currentTrackColor = (int) new ArgbEvaluator().evaluate(fraction, startTrack, endTrack);
+            currentHandleColor = (int) new ArgbEvaluator().evaluate(fraction, startHandle, endHandle);
+            currentOutlineColor = (int) new ArgbEvaluator().evaluate(fraction, startOutline, endOutline);
+            invalidate();
         });
         colorAnimator.start();
     }
@@ -580,6 +580,16 @@ public class MaterialSwitch extends CompoundButton {
         return hasTrackOutlineColor
                 ? trackOutlineColor
                 : dynamicColors.outline().getArgb(colorScheme);
+    }
+
+    private int resolveOutlineColor() {
+        if (isChecked()) {
+            return resolveTrackColor();
+        }
+        if (!isEnabled()) {
+            return dynamicColors.outlineVariant().getArgb(colorScheme);
+        }
+        return resolveTrackOutlineColor();
     }
 
     private int resolveIconColor() {

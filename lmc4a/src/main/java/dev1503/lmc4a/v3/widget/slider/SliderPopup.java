@@ -9,7 +9,7 @@ import android.widget.PopupWindow;
 
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 
-class SliderPopup {
+public class SliderPopup {
 
     private final SliderPopupView popupView;
     private PopupWindow popupWindow;
@@ -25,29 +25,29 @@ class SliderPopup {
     private static final float IN_STIFFNESS = 400f;
     private static final float IN_DAMPING = 0.7f;
 
-    SliderPopup(android.content.Context context) {
+    public SliderPopup(android.content.Context context) {
         this.popupView = new SliderPopupView(context);
     }
 
-    void setValueIndicatorColor(int color) {
+    public void setValueIndicatorColor(int color) {
         setBackgroundColor(color);
     }
 
-    void setThumbRadiusDp(float radiusDp) {
+    public void setThumbRadiusDp(float radiusDp) {
         this.thumbRadiusDp = radiusDp;
     }
 
-    void setBackgroundColor(int color) {
+    public void setBackgroundColor(int color) {
         this.backgroundColor = color;
         popupView.setBackgroundColor2(color);
     }
 
-    void setTextColor(int color) {
+    public void setTextColor(int color) {
         this.textColor = color;
         popupView.setTextColor2(color);
     }
 
-    void show(View anchor, int thumbCenterX, int thumbCenterOffsetY, String text) {
+    public void show(View anchor, int thumbCenterX, int thumbCenterOffsetY, String text) {
         if (springAnimator != null && springAnimator.isRunning()) {
             springAnimator.cancel();
         }
@@ -98,7 +98,7 @@ class SliderPopup {
         animateIn(popupWidth, popupHeight);
     }
 
-    void update(int thumbCenterX, String text) {
+    public void update(int thumbCenterX, String text) {
         if (popupWindow == null || !popupWindow.isShowing()) {
             return;
         }
@@ -122,7 +122,7 @@ class SliderPopup {
         }
     }
 
-    void dismiss() {
+    public void dismiss() {
         if (popupWindow == null || !popupWindow.isShowing()) {
             return;
         }
@@ -138,7 +138,7 @@ class SliderPopup {
         });
     }
 
-    boolean isShowing() {
+    public boolean isShowing() {
         return popupWindow != null && popupWindow.isShowing();
     }
 
@@ -159,21 +159,18 @@ class SliderPopup {
         lastFrameTime = System.nanoTime();
         springAnimator = ValueAnimator.ofFloat(0f, 1f);
         springAnimator.setDuration(1000);
-        springAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                long now = System.nanoTime();
-                float delta = (now - lastFrameTime) / 1_000_000_000f;
-                lastFrameTime = now;
-                delta = Math.min(delta, 0.05f);
+        springAnimator.addUpdateListener(animation -> {
+            long now = System.nanoTime();
+            float delta = (now - lastFrameTime) / 1_000_000_000f;
+            lastFrameTime = now;
+            delta = Math.min(delta, 0.05f);
 
-                float value = spring.update(delta);
-                popupView.setScaleX(value);
-                popupView.setScaleY(value);
+            float value = spring.update(delta);
+            popupView.setScaleX(value);
+            popupView.setScaleY(value);
 
-                if (spring.isAtRest()) {
-                    animation.cancel();
-                }
+            if (spring.isAtRest()) {
+                animation.cancel();
             }
         });
         springAnimator.start();
@@ -187,15 +184,12 @@ class SliderPopup {
         lastFrameTime = System.nanoTime();
         springAnimator = ValueAnimator.ofFloat(0f, 1f);
         springAnimator.setDuration(200);
-        springAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float t = animation.getAnimatedFraction();
-                float easedT = t * t;
-                float value = 1f - easedT;
-                popupView.setScaleX(value);
-                popupView.setScaleY(value);
-            }
+        springAnimator.addUpdateListener(animation -> {
+            float t = animation.getAnimatedFraction();
+            float easedT = t * t;
+            float value = 1f - easedT;
+            popupView.setScaleX(value);
+            popupView.setScaleY(value);
         });
         springAnimator.addListener(new android.animation.AnimatorListenerAdapter() {
             @Override

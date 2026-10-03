@@ -14,10 +14,12 @@ public class V3EActivity extends Activity {
 
     private static final String[] TITLES = {
             "MaterialButton",
+            "MaterialSlider",
     };
 
     private static final Class<?>[] DEMO_CLASSES = {
             dev1503.litematerial.lmc4a.app.demo.v3e.ButtonDemoActivity.class,
+            dev1503.litematerial.lmc4a.app.demo.v3e.SliderDemoActivity.class,
     };
 
     @Override

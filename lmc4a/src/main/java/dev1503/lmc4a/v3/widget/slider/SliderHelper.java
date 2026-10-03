@@ -1,5 +1,7 @@
 package dev1503.lmc4a.v3.widget.slider;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -33,6 +35,9 @@ class SliderHelper {
     private static final float MASK_RADIUS_DP = 24.0f;
     private static final float IN_STIFFNESS = 400f;
     private static final float IN_DAMPING = 0.7f;
+    private static final float PRESS_STIFFNESS = 900.0f;
+    private static final float PRESS_DAMPING = 0.8f;
+    private static final long PRESS_DURATION_MS = 300L;
 
     DynamicScheme colorScheme;
     final MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
@@ -58,7 +63,15 @@ class SliderHelper {
     private Integer disabledTrackColorOverride;
     private Integer disabledThumbColorOverride;
     private Integer valueIndicatorColorOverride;
-    private float thumbRadiusDp = THUMB_SIZE_DP / 2.0f;
+    float thumbWidthDp = THUMB_SIZE_DP;
+    float thumbHeightDp = THUMB_SIZE_DP;
+    private float pressedThumbWidthDp = -1.0f;
+    float trackGapDp = 0.0f;
+    float pressProgress;
+    private float pressTarget;
+    private SpringSimulation pressSpring;
+    private ValueAnimator pressAnimator;
+    private long pressFrameTime;
     private float trackHeightDp = TRACK_HEIGHT_DP;
     boolean valueIndicatorEnabled = true;
 
@@ -66,6 +79,8 @@ class SliderHelper {
     int trackBottom;
     int trackLeft;
     int trackRight;
+    int handleLeft;
+    int handleSpan;
 
     private final float[] animatedMaskRadius = new float[2];
     private final SpringSimulation[] spring = new SpringSimulation[2];
@@ -89,6 +104,46 @@ class SliderHelper {
         int outlineVariant = dynamicColors.outlineVariant().getArgb(colorScheme);
         int outline = dynamicColors.outline().getArgb(colorScheme);
         disabledTrackColor = blendColors(outlineVariant, outline, 0.5f);
+    }
+
+    boolean hasProgressColor() {
+        return progressColorOverride != null;
+    }
+
+    boolean hasTrackColor() {
+        return trackColorOverride != null;
+    }
+
+    boolean hasThumbColor() {
+        return thumbColorOverride != null;
+    }
+
+    boolean hasDisabledTrackColor() {
+        return disabledTrackColorOverride != null;
+    }
+
+    boolean hasDisabledThumbColor() {
+        return disabledThumbColorOverride != null;
+    }
+
+    int progressColorValue() {
+        return progressColor;
+    }
+
+    int trackColorValue() {
+        return trackColor;
+    }
+
+    int thumbColorValue() {
+        return thumbColor;
+    }
+
+    int disabledTrackColorValue() {
+        return disabledTrackColor;
+    }
+
+    void invalidateShadow() {
+        thumbShadowShader = null;
     }
 
     void clearColorOverrides() {
@@ -181,17 +236,86 @@ class SliderHelper {
     }
 
     float getThumbRadiusDp() {
-        return thumbRadiusDp;
+        return thumbWidthDp / 2.0f;
     }
 
     void setThumbRadiusDp(float radiusDp) {
-        thumbRadiusDp = Math.max(1.0f, radiusDp);
-        thumbShadowShader = null;
+        setThumbWidthDp(radiusDp * 2.0f);
+        setThumbHeightDp(radiusDp * 2.0f);
     }
 
     void clearThumbRadiusDp() {
-        thumbRadiusDp = THUMB_SIZE_DP / 2.0f;
+        thumbWidthDp = THUMB_SIZE_DP;
+        thumbHeightDp = THUMB_SIZE_DP;
         thumbShadowShader = null;
+    }
+
+    float getThumbWidthDp() {
+        return thumbWidthDp;
+    }
+
+    void setThumbWidthDp(float widthDp) {
+        thumbWidthDp = Math.max(1.0f, widthDp);
+        if (pressedThumbWidthDp > thumbWidthDp) {
+            pressedThumbWidthDp = thumbWidthDp;
+        }
+        thumbShadowShader = null;
+    }
+
+    void clearThumbWidthDp() {
+        thumbWidthDp = THUMB_SIZE_DP;
+        thumbShadowShader = null;
+    }
+
+    float getThumbHeightDp() {
+        return thumbHeightDp;
+    }
+
+    void setThumbHeightDp(float heightDp) {
+        thumbHeightDp = Math.max(1.0f, heightDp);
+        thumbShadowShader = null;
+    }
+
+    void clearThumbHeightDp() {
+        thumbHeightDp = THUMB_SIZE_DP;
+        thumbShadowShader = null;
+    }
+
+    float getPressedThumbWidthDp() {
+        if (pressedThumbWidthDp < 0.0f) {
+            return thumbWidthDp;
+        }
+        return Math.min(pressedThumbWidthDp, thumbWidthDp);
+    }
+
+    void setPressedThumbWidthDp(float widthDp) {
+        pressedThumbWidthDp = Math.max(1.0f, Math.min(thumbWidthDp, widthDp));
+    }
+
+    void clearPressedThumbWidthDp() {
+        pressedThumbWidthDp = -1.0f;
+    }
+
+    float getTrackGapDp() {
+        return trackGapDp;
+    }
+
+    void setTrackGapDp(float gapDp) {
+        trackGapDp = Math.max(0.0f, gapDp);
+    }
+
+    void clearTrackGapDp() {
+        trackGapDp = 0.0f;
+    }
+
+    float currentThumbWidthPx(View view) {
+        float resting = dp(view, thumbWidthDp);
+        float pressed = dp(view, getPressedThumbWidthDp());
+        return resting + pressProgress * (pressed - resting);
+    }
+
+    float travelInsetPx(View view) {
+        return dp(view, Math.max(thumbWidthDp, getPressedThumbWidthDp())) / 2.0f;
     }
 
     float getTrackHeightDp() {
@@ -210,12 +334,16 @@ class SliderHelper {
         return lastTrackWidthPx / view.getResources().getDisplayMetrics().density;
     }
 
-    void updateTrackBounds(View view, int w, int h) {
-        float thumbRadius = dp(view, getThumbRadiusDp());
-        trackTop = (int) ((h - dp(view, getTrackHeightDp())) / 2);
-        trackBottom = trackTop + (int) dp(view, getTrackHeightDp());
-        trackLeft = (int) (view.getPaddingLeft() + thumbRadius);
-        trackRight = (int) (w - view.getPaddingRight() - thumbRadius);
+    void updateTrackBounds(View view, int w, int h, float edgeInsetPx) {
+        float trackHeightPx = dp(view, getTrackHeightDp());
+        trackTop = (int) ((h - trackHeightPx) / 2);
+        trackBottom = trackTop + (int) trackHeightPx;
+        trackLeft = (int) (view.getPaddingLeft() + edgeInsetPx);
+        trackRight = (int) (w - view.getPaddingRight() - edgeInsetPx);
+        float travel = travelInsetPx(view);
+        handleLeft = (int) (view.getPaddingLeft() + travel);
+        int handleRight = (int) (w - view.getPaddingRight() - travel);
+        handleSpan = Math.max(0, handleRight - handleLeft);
         lastTrackWidthPx = Math.max(0, trackRight - trackLeft);
     }
 
@@ -229,6 +357,66 @@ class SliderHelper {
             height = Math.min(height, View.MeasureSpec.getSize(heightMeasureSpec));
         }
         return new int[]{width, height};
+    }
+
+    void startPressAnimation(final View view, float target) {
+        if (getPressedThumbWidthDp() >= thumbWidthDp) {
+            pressProgress = target;
+            return;
+        }
+        if (pressAnimator != null && pressAnimator.isRunning() && pressTarget == target) {
+            return;
+        }
+        pressTarget = target;
+        if (view.getWindowToken() == null) {
+            cancelPressAnimation();
+            pressProgress = target;
+            return;
+        }
+        cancelPressAnimation();
+        pressSpring = new SpringSimulation(PRESS_STIFFNESS, PRESS_DAMPING);
+        pressSpring.setPosition(pressProgress);
+        pressSpring.setTarget(target);
+        pressFrameTime = System.nanoTime();
+
+        pressAnimator = ValueAnimator.ofFloat(0.0f, 1.0f);
+        pressAnimator.setDuration(PRESS_DURATION_MS);
+        pressAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                long now = System.nanoTime();
+                float delta = (now - pressFrameTime) / 1_000_000_000f;
+                pressFrameTime = now;
+                delta = Math.min(delta, 0.05f);
+
+                pressProgress = pressSpring.update(delta);
+                view.invalidate();
+
+                if (pressSpring.isAtRest()) {
+                    animation.cancel();
+                }
+            }
+        });
+        pressAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (pressAnimator == animation) {
+                    pressProgress = pressTarget;
+                    pressAnimator = null;
+                    pressSpring = null;
+                    view.invalidate();
+                }
+            }
+        });
+        pressAnimator.start();
+    }
+
+    void cancelPressAnimation() {
+        if (pressAnimator != null) {
+            pressAnimator.cancel();
+            pressAnimator = null;
+        }
+        pressSpring = null;
     }
 
     void startMaskAnimation(int id, View view) {
@@ -316,42 +504,50 @@ class SliderHelper {
         canvas.drawCircle(centerX, centerY, radius, thumbPaint);
     }
 
-    void drawThumb(Canvas canvas, View view, boolean enabled, float centerX, float centerY) {
-        float thumbRadius = dp(view, getThumbRadiusDp());
-        float shadowRadius = thumbRadius + dp(view, THUMB_SHADOW_BLUR_DP);
-        float shadowCenterY = centerY + dp(view, THUMB_SHADOW_OFFSET_DP);
+    void drawThumb(Canvas canvas, View view, boolean enabled, float centerX, float centerY,
+                   float thumbWidthPx, float thumbHeightPx, boolean shadowEnabled) {
+        float halfWidth = thumbWidthPx / 2.0f;
+        float halfHeight = thumbHeightPx / 2.0f;
+        float blur = dp(view, THUMB_SHADOW_BLUR_DP);
 
-        // 阴影用径向渐变自绘：setShadowLayer 在 API 28 之前只对文字生效，
-        // 硬件加速画布上图形不会画阴影，Android 8.1 上 thumb 因此完全没有阴影。
-        // 这里用单位圆渐变配合 localMatrix 平移缩放，避免每帧重建 Shader。
-        if (thumbShadowShader == null) {
-            thumbShadowShader = new RadialGradient(0f, 0f, 1f,
-                    new int[]{THUMB_SHADOW_COLOR, THUMB_SHADOW_COLOR_EDGE},
-                    new float[]{thumbRadius / shadowRadius, 1f},
-                    Shader.TileMode.CLAMP);
+        if (shadowEnabled) {
+            float shadowRadiusX = halfWidth + blur;
+            float shadowRadiusY = halfHeight + blur;
+            float shadowCenterY = centerY + dp(view, THUMB_SHADOW_OFFSET_DP);
+            float scale = Math.max(halfWidth, halfHeight);
+            float stop = scale / (scale + blur);
+
+            if (thumbShadowShader == null) {
+                thumbShadowShader = new RadialGradient(0f, 0f, 1f,
+                        new int[]{THUMB_SHADOW_COLOR, THUMB_SHADOW_COLOR_EDGE},
+                        new float[]{stop, 1f},
+                        Shader.TileMode.CLAMP);
+            }
+            thumbShadowMatrix.setScale(shadowRadiusX, shadowRadiusY);
+            thumbShadowMatrix.postTranslate(centerX, shadowCenterY);
+            thumbShadowShader.setLocalMatrix(thumbShadowMatrix);
+            thumbShadowPaint.setShader(thumbShadowShader);
+            thumbRect.set(centerX - shadowRadiusX, shadowCenterY - shadowRadiusY,
+                    centerX + shadowRadiusX, shadowCenterY + shadowRadiusY);
+            canvas.drawOval(thumbRect, thumbShadowPaint);
+            thumbShadowPaint.setShader(null);
         }
-        thumbShadowMatrix.setScale(shadowRadius, shadowRadius);
-        thumbShadowMatrix.postTranslate(centerX, shadowCenterY);
-        thumbShadowShader.setLocalMatrix(thumbShadowMatrix);
-        thumbShadowPaint.setShader(thumbShadowShader);
-        canvas.drawCircle(centerX, shadowCenterY, shadowRadius, thumbShadowPaint);
-        thumbShadowPaint.setShader(null);
 
         thumbPaint.setColor(enabled ? getThumbColor() : getDisabledThumbColor());
-        thumbRect.set(centerX - thumbRadius, centerY - thumbRadius,
-                centerX + thumbRadius, centerY + thumbRadius);
-        canvas.drawRoundRect(thumbRect, thumbRadius, thumbRadius, thumbPaint);
+        thumbRect.set(centerX - halfWidth, centerY - halfHeight,
+                centerX + halfWidth, centerY + halfHeight);
+        canvas.drawRoundRect(thumbRect, halfWidth, halfHeight, thumbPaint);
     }
 
     int centerXFromFraction(float fraction) {
-        return (int) (trackLeft + fraction * (trackRight - trackLeft));
+        return (int) (handleLeft + fraction * handleSpan);
     }
 
     int progressFromTouch(float touchX, int internalMax) {
-        if (trackRight == trackLeft) {
+        if (handleSpan <= 0) {
             return 0;
         }
-        float fraction = (touchX - trackLeft) / (float) (trackRight - trackLeft);
+        float fraction = (touchX - handleLeft) / (float) handleSpan;
         fraction = Math.max(0f, Math.min(1f, fraction));
         return (int) (fraction * internalMax + 0.5f);
     }
