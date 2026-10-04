@@ -25,6 +25,8 @@ import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 
+import androidx.annotation.RequiresApi;
+
 import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
 import dev1503.lmc4a.v3.color.dynamiccolor.MaterialDynamicColors;
@@ -51,6 +53,10 @@ public class MaterialDrawer extends Dialog {
     private DrawerOrientation orientation = DrawerOrientation.LEFT;
     private boolean opened;
     private boolean dragEnabled = true;
+    private boolean dragToCancelEnabled = true;
+    private boolean cancelable = true;
+    private boolean canceledOnTouchOutside = true;
+    private boolean dismissed;
     private int touchSlop;
     private ValueAnimator animator;
 
@@ -79,7 +85,9 @@ public class MaterialDrawer extends Dialog {
         scrimView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                close();
+                if (cancelable && canceledOnTouchOutside) {
+                    cancel();
+                }
             }
         });
         rootView.addView(scrimView, new FrameLayout.LayoutParams(
@@ -103,10 +111,6 @@ public class MaterialDrawer extends Dialog {
     }
 
     @Override
-    public void onBackPressed() {
-        close();
-    }
-
     public void setContentView(View view) {
         if (contentView == view) {
             return;
@@ -128,12 +132,13 @@ public class MaterialDrawer extends Dialog {
         return contentView;
     }
 
-    public void open(DrawerOrientation orientation) {
+    public MaterialDrawer open(DrawerOrientation orientation) {
         if (orientation == null) {
-            return;
+            return this;
         }
         boolean switched = opened && this.orientation != orientation;
         this.orientation = orientation;
+        dismissed = false;
         updatePanelLayout();
 
         if (!isShowing()) {
@@ -147,7 +152,7 @@ public class MaterialDrawer extends Dialog {
             try {
                 super.show();
             } catch (RuntimeException ignored) {
-                return;
+                return this;
             }
             applyWindowLayout();
             requestInsets();
@@ -158,14 +163,20 @@ public class MaterialDrawer extends Dialog {
 
         opened = true;
         animateTo(true);
+        return this;
     }
 
-    public void close() {
-        if (!isShowing()) {
-            opened = false;
+    @Override
+    public void dismiss() {
+        if (dismissed) {
             return;
         }
+        dismissed = true;
         opened = false;
+        if (!isShowing()) {
+            super.dismiss();
+            return;
+        }
         animateTo(false);
     }
 
@@ -177,17 +188,51 @@ public class MaterialDrawer extends Dialog {
         return orientation;
     }
 
-    public void setDragEnabled(boolean dragEnabled) {
+    public MaterialDrawer setDragEnabled(boolean dragEnabled) {
         this.dragEnabled = dragEnabled;
+        return this;
     }
 
     public boolean isDragEnabled() {
         return dragEnabled;
     }
 
-    public void setDrawerWidthDp(float drawerWidthDp) {
+    public MaterialDrawer setDragToCancelEnabled(boolean dragToCancelEnabled) {
+        this.dragToCancelEnabled = dragToCancelEnabled;
+        return this;
+    }
+
+    public boolean isDragToCancelEnabled() {
+        return dragToCancelEnabled;
+    }
+
+    @Override
+    public void setCancelable(boolean flag) {
+        super.setCancelable(flag);
+        this.cancelable = flag;
+    }
+
+    public boolean isCancelable() {
+        return cancelable;
+    }
+
+    @Override
+    public void setCanceledOnTouchOutside(boolean cancel) {
+        if (cancel && !cancelable) {
+            setCancelable(true);
+        }
+        super.setCanceledOnTouchOutside(cancel);
+        this.canceledOnTouchOutside = cancel;
+    }
+
+    public boolean isCanceledOnTouchOutside() {
+        return canceledOnTouchOutside;
+    }
+
+    public MaterialDrawer setDrawerWidthDp(float drawerWidthDp) {
         drawerWidthDpOverride = drawerWidthDp > 0f ? drawerWidthDp : null;
         applyPanelSize();
+        return this;
     }
 
     public float getDrawerWidthDp() {
@@ -199,25 +244,28 @@ public class MaterialDrawer extends Dialog {
         return Math.min(screenWidthDp * DEFAULT_WIDTH_SCREEN_FRACTION, DEFAULT_MAX_WIDTH_DP);
     }
 
-    public void clearDrawerWidthDp() {
+    public MaterialDrawer clearDrawerWidthDp() {
         drawerWidthDpOverride = null;
         applyPanelSize();
+        return this;
     }
 
     public DynamicScheme getColorScheme() {
         return colorScheme;
     }
 
-    public void setColorScheme(DynamicScheme colorScheme) {
+    public MaterialDrawer setColorScheme(DynamicScheme colorScheme) {
         this.colorScheme = colorScheme != null ? colorScheme : publicColorScheme;
         this.containerColorOverride = null;
         this.scrimColorOverride = null;
         refreshColors();
+        return this;
     }
 
-    public void setContainerColor(int color) {
+    public MaterialDrawer setContainerColor(int color) {
         containerColorOverride = color;
         refreshColors();
+        return this;
     }
 
     public int getContainerColor() {
@@ -226,14 +274,16 @@ public class MaterialDrawer extends Dialog {
                 : dynamicColors.surfaceContainer().getArgb(colorScheme);
     }
 
-    public void clearContainerColor() {
+    public MaterialDrawer clearContainerColor() {
         containerColorOverride = null;
         refreshColors();
+        return this;
     }
 
-    public void setScrimColor(int color) {
+    public MaterialDrawer setScrimColor(int color) {
         scrimColorOverride = color;
         refreshColors();
+        return this;
     }
 
     public int getScrimColor() {
@@ -243,9 +293,10 @@ public class MaterialDrawer extends Dialog {
         return applyAlphaFraction(dynamicColors.scrim().getArgb(colorScheme), SCRIM_ALPHA);
     }
 
-    public void clearScrimColor() {
+    public MaterialDrawer clearScrimColor() {
         scrimColorOverride = null;
         refreshColors();
+        return this;
     }
 
     private void animateTo(final boolean open) {
@@ -256,10 +307,7 @@ public class MaterialDrawer extends Dialog {
         final float targetAlpha = open ? 1f : 0f;
         final float startAlpha = scrimView.getAlpha();
         if (start == target) {
-            scrimView.setAlpha(targetAlpha);
-            if (!open) {
-                dismissDialog();
-            }
+            finishAnimation(open);
             return;
         }
 
@@ -282,12 +330,7 @@ public class MaterialDrawer extends Dialog {
                     return;
                 }
                 animator = null;
-                if (open) {
-                    panelView.setTranslationX(target);
-                    scrimView.setAlpha(targetAlpha);
-                } else {
-                    dismissDialog();
-                }
+                finishAnimation(open);
             }
         });
         animator = valueAnimator;
@@ -302,10 +345,15 @@ public class MaterialDrawer extends Dialog {
         }
     }
 
-    private void dismissDialog() {
+    private void finishAnimation(boolean open) {
+        if (open) {
+            panelView.setTranslationX(0f);
+            scrimView.setAlpha(1f);
+            return;
+        }
         if (isShowing()) {
             try {
-                dismiss();
+                super.dismiss();
             } catch (RuntimeException ignored) {
             }
         }
@@ -346,6 +394,7 @@ public class MaterialDrawer extends Dialog {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     private final class WindowInsetsHandler implements View.OnApplyWindowInsetsListener {
 
         @Override
@@ -580,9 +629,8 @@ public class MaterialDrawer extends Dialog {
             } else {
                 close = fraction > DRAG_CLOSE_FRACTION;
             }
-            if (close) {
-                opened = false;
-                animateTo(false);
+            if (close && cancelable && dragToCancelEnabled && dragEnabled) {
+                dismiss();
             } else {
                 opened = true;
                 animateTo(true);

@@ -54,10 +54,10 @@ public class DrawerDemoActivity extends DemoActivity {
                 updateStatus();
             }
         }), buttonParams());
-        content.addView(action("close()", new View.OnClickListener() {
+        content.addView(action("dismiss()", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawer.close();
+                drawer.dismiss();
                 updateStatus();
             }
         }), buttonParams());
@@ -86,7 +86,36 @@ public class DrawerDemoActivity extends DemoActivity {
                 toast("dragEnabled=" + drawer.isDragEnabled());
             }
         }), buttonParams());
-        content.addView(hint("打开抽屉后在面板上左右拖动可关闭"), hintParams());
+        content.addView(action("setDragToCancelEnabled() 切换", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.setDragToCancelEnabled(!drawer.isDragToCancelEnabled());
+                updateStatus();
+                toast("dragToCancelEnabled=" + drawer.isDragToCancelEnabled());
+            }
+        }), buttonParams());
+        content.addView(hint("打开抽屉后在面板上左右拖动可关闭（需 cancelable 且 dragToCancelEnabled 且 dragEnabled）"),
+                hintParams());
+
+        content.addView(caption("取消"), captionParams());
+        content.addView(action("setCancelable() 切换", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.setCancelable(!drawer.isCancelable());
+                updateStatus();
+                toast("cancelable=" + drawer.isCancelable()
+                        + " touchOutside=" + drawer.isCanceledOnTouchOutside());
+            }
+        }), buttonParams());
+        content.addView(action("setCanceledOnTouchOutside() 切换", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.setCanceledOnTouchOutside(!drawer.isCanceledOnTouchOutside());
+                updateStatus();
+                toast("touchOutside=" + drawer.isCanceledOnTouchOutside()
+                        + " cancelable=" + drawer.isCancelable());
+            }
+        }), buttonParams());
 
         content.addView(caption("内容"), captionParams());
         content.addView(action("getContentView()", new View.OnClickListener() {
@@ -196,12 +225,12 @@ public class DrawerDemoActivity extends DemoActivity {
         }
 
         MaterialButton closeButton = new MaterialButton(this);
-        closeButton.setText("close()");
+        closeButton.setText("dismiss()");
         closeButton.setStyle(ButtonStyle.OUTLINED);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawer.close();
+                drawer.dismiss();
                 updateStatus();
             }
         });
@@ -220,7 +249,9 @@ public class DrawerDemoActivity extends DemoActivity {
         statusView.setText("isOpen=" + drawer.isOpen()
                 + "  orientation=" + drawer.getOrientation()
                 + "  widthDp=" + drawer.getDrawerWidthDp()
-                + "  drag=" + drawer.isDragEnabled());
+                + "  drag=" + drawer.isDragEnabled()
+                + "  dragToCancel=" + drawer.isDragToCancelEnabled()
+                + "  cancelable=" + drawer.isCancelable());
     }
 
     private TextView hint(String text) {
