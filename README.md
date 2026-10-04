@@ -53,7 +53,7 @@ A Material 3 component library compatible with Android 4.1
 | 外部绑定 | `bindTo(Xxx)` / `unbind()` / `isBound()` | 不使用 `attachToXxx` / `detachFromXxx` / `unbindTo` / `unbindXxxView` |
 | 监听器 | `setOnXxxListener(OnXxxListener)` | 单一监听器；不使用 `addOnXxxListener` / `removeOnXxxListener` / `clearOnXxxListeners` |
 | 槽位 / 子项 | `addXxx(...)` / `removeXxx(...)` / `getXxx(int)` / `getXxxCount()` | 同一槽位只保留一套方法名 |
-| 显示 / 隐藏 | `show()` / `hide()` | 不使用 `dismiss()` |
+| 显示 / 隐藏 | `show()` / `hide()` | 不使用 `dismiss()`；基于 `Dialog` 的组件（如 `MaterialBottomSheet`）遵循平台语义，用 `cancel()` / `dismiss()`，二者均保留退出动画 |
 | 图标 | `setIcon(Icon)` / `getIcon()` | 全库统一使用 `Icon` 包装类型 |
 
 同一属性只能有一个 setter / getter 名字（例如不允许同时存在 `getBackgroundColor()` 与 `getContainerColor()`）。

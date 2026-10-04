@@ -22,6 +22,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import androidx.annotation.RequiresApi;
+
 import dev1503.lmc4a.v3.Lmc;
 import dev1503.lmc4a.v3.anim.SpringSimulation;
 import dev1503.lmc4a.v3.color.dynamiccolor.DynamicScheme;
@@ -68,7 +70,10 @@ public class MaterialBottomSheet extends Dialog {
     private boolean dismissed;
     private boolean fullscreenMode;
     private boolean dragEnabled = true;
+    private boolean dragToCancelEnabled = true;
     private boolean hideable = true;
+    private boolean cancelable = true;
+    private boolean canceledOnTouchOutside = true;
     private SheetState sheetState = SheetState.COLLAPSED;
     private int touchSlop;
     private int peekHeight = PEEK_HEIGHT_AUTO;
@@ -89,15 +94,10 @@ public class MaterialBottomSheet extends Dialog {
     }
 
     public MaterialBottomSheet(Context context, View contentView) {
-        // 使用全屏、无标题、透明背景的窗口主题：DeviceDefault 之类的应用主题会让
-        // Dialog 变成带标题栏的浮动窗口，既撑不满屏幕也会给面板加上额外的窗口内边距。
         super(context, android.R.style.Theme_Translucent_NoTitleBar);
         this.contentView = contentView;
         Window window = getWindow();
         if (window != null) {
-            // 窗口面的格式要在 decor 创建之前确定：API 16 上仅靠主题的 windowIsTranslucent
-            // 并不会让图层带上 alpha，遮罩 alpha 被忽略而变成纯黑，身后的 Activity 也会被
-            // 系统当作被完全遮挡而停止绘制。
             window.setFormat(PixelFormat.TRANSLUCENT);
         }
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -212,12 +212,7 @@ public class MaterialBottomSheet extends Dialog {
         handleBg.setCornerRadius(dp(HANDLE_HEIGHT_DP / 2.0f));
         dragHandle.setBackground(handleBg);
         dragHandle.setClickable(true);
-        dragHandle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleExpandState();
-            }
-        });
+        dragHandle.setOnClickListener(v -> toggleExpandState());
         LinearLayout.LayoutParams handleParams = new LinearLayout.LayoutParams(
                 dp(HANDLE_WIDTH_DP), dp(HANDLE_HEIGHT_DP));
         handleParams.gravity = Gravity.CENTER_HORIZONTAL;
@@ -226,10 +221,9 @@ public class MaterialBottomSheet extends Dialog {
 
         scrimView = new View(getContext());
         scrimView.setBackgroundColor(Color.TRANSPARENT);
-        scrimView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hide();
+        scrimView.setOnClickListener(v -> {
+            if (cancelable && canceledOnTouchOutside) {
+                cancel();
             }
         });
         container.addView(scrimView, new FrameLayout.LayoutParams(
@@ -246,7 +240,7 @@ public class MaterialBottomSheet extends Dialog {
         panelParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
         container.addView(sheetPanel, panelParams);
 
-        setContentView(container);
+        super.setContentView(container);
         refreshBackgroundColors();
     }
 
@@ -274,12 +268,7 @@ public class MaterialBottomSheet extends Dialog {
         if (window == null) {
             return;
         }
-        // 这些属性必须等 decor 创建（show）之后再设置，否则会被主题中的窗口默认值覆盖：
-        // DeviceDefault 之类的主题会给对话框套上不透明背景与阴影内边距，窗口也会退化成
-        // 浮动尺寸，遮罩便无法铺满屏幕。
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        // API 16 上仅靠主题的 windowIsTranslucent 不足以让窗口面带上 alpha 通道，
-        // 遮罩会变成不透光的纯黑并把身后的 Activity 一起挡掉，这里显式指定格式。
         window.setFormat(PixelFormat.TRANSLUCENT);
         window.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
@@ -312,8 +301,6 @@ public class MaterialBottomSheet extends Dialog {
         }
         window.setAttributes(params);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            // 面板贴屏幕底部，但内容不能被导航栏/手势条盖住；全屏展开时也不能顶到
-            // 状态栏下面（否则顶部手柄会被状态栏窗口抢走点击）
             window.getDecorView().setOnApplyWindowInsetsListener(new WindowInsetsHandler());
         }
     }
@@ -327,6 +314,7 @@ public class MaterialBottomSheet extends Dialog {
         return 0.6f;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     private final class WindowInsetsHandler implements View.OnApplyWindowInsetsListener {
 
         @Override
@@ -350,21 +338,24 @@ public class MaterialBottomSheet extends Dialog {
         return colorScheme;
     }
 
-    public void setColorScheme(DynamicScheme colorScheme) {
+    public MaterialBottomSheet setColorScheme(DynamicScheme colorScheme) {
         this.colorScheme = colorScheme;
         this.containerColorOverride = null;
         this.scrimColorOverride = null;
         this.cornerRadiusDpOverride = null;
         refreshBackgroundColors();
         applyWindowLayout();
+        return this;
     }
 
-    public void clearContainerColor() {
+    public MaterialBottomSheet clearContainerColor() {
         containerColorOverride = null;
         refreshBackgroundColors();
+        return this;
     }
 
-    public void hide() {
+    @Override
+    public void dismiss() {
         if (dismissed) {
             return;
         }
@@ -395,16 +386,10 @@ public class MaterialBottomSheet extends Dialog {
         animator.start();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (hideable) {
-            super.onBackPressed();
-        }
-    }
-
-    public void setContainerColor(int color) {
+    public MaterialBottomSheet setContainerColor(int color) {
         containerColorOverride = color;
         refreshBackgroundColors();
+        return this;
     }
 
     public int getContainerColor() {
@@ -413,10 +398,11 @@ public class MaterialBottomSheet extends Dialog {
                 : dynamicColors.surfaceContainerLow().getArgb(colorScheme);
     }
 
-    public void setScrimColor(int color) {
+    public MaterialBottomSheet setScrimColor(int color) {
         scrimColorOverride = color;
         refreshBackgroundColors();
         applyWindowLayout();
+        return this;
     }
 
     public int getScrimColor() {
@@ -427,15 +413,17 @@ public class MaterialBottomSheet extends Dialog {
                 dynamicColors.scrim().getArgb(colorScheme), resolveDimAmount());
     }
 
-    public void clearScrimColor() {
+    public MaterialBottomSheet clearScrimColor() {
         scrimColorOverride = null;
         refreshBackgroundColors();
         applyWindowLayout();
+        return this;
     }
 
-    public void setCornerRadiusDp(float cornerRadiusDp) {
+    public MaterialBottomSheet setCornerRadiusDp(float cornerRadiusDp) {
         cornerRadiusDpOverride = Math.max(0f, cornerRadiusDp);
         refreshBackgroundColors();
+        return this;
     }
 
     public float getCornerRadiusDp() {
@@ -444,33 +432,58 @@ public class MaterialBottomSheet extends Dialog {
                 : DEFAULT_CORNER_RADIUS_DP;
     }
 
-    public void clearCornerRadiusDp() {
+    public MaterialBottomSheet clearCornerRadiusDp() {
         cornerRadiusDpOverride = null;
         refreshBackgroundColors();
+        return this;
     }
 
-    public void setDragEnabled(boolean dragEnabled) {
+    public MaterialBottomSheet setDragEnabled(boolean dragEnabled) {
         this.dragEnabled = dragEnabled;
+        return this;
     }
 
     public boolean isDragEnabled() {
         return dragEnabled;
     }
 
-    public void setHideable(boolean hideable) {
-        this.hideable = hideable;
-        setCancelable(hideable);
+    public MaterialBottomSheet setDragToCancelEnabled(boolean dragToCancelEnabled) {
+        this.dragToCancelEnabled = dragToCancelEnabled;
+        return this;
     }
 
-    public boolean isHideable() {
-        return hideable;
+    public boolean isDragToCancelEnabled() {
+        return dragToCancelEnabled;
+    }
+
+    @Override
+    public void setCancelable(boolean flag) {
+        super.setCancelable(flag);
+        this.cancelable = flag;
+    }
+
+    public boolean isCancelable() {
+        return cancelable;
+    }
+
+    @Override
+    public void setCanceledOnTouchOutside(boolean cancel) {
+        if (cancel && !cancelable) {
+            setCancelable(true);
+        }
+        super.setCanceledOnTouchOutside(cancel);
+        this.canceledOnTouchOutside = cancel;
+    }
+
+    public boolean isCanceledOnTouchOutside() {
+        return canceledOnTouchOutside;
     }
 
     public boolean isFullscreenMode() {
         return fullscreenMode;
     }
 
-    public void setFullscreenMode(boolean fullscreenMode) {
+    public MaterialBottomSheet setFullscreenMode(boolean fullscreenMode) {
         this.fullscreenMode = fullscreenMode;
         updatePanelHeight();
         if (!isHalfExpandedAllowed() && sheetState == SheetState.HALF_EXPANDED) {
@@ -479,65 +492,72 @@ public class MaterialBottomSheet extends Dialog {
         if (sheetState != SheetState.DRAGGING && isShowing()) {
             animateOffsetTo(offsetForState(sheetState), (long) STATE_ANIM_DURATION_MS);
         }
+        return this;
     }
 
-    public void setPeekHeight(int peekHeightPx) {
+    public MaterialBottomSheet setPeekHeight(int peekHeightPx) {
         this.peekHeight = peekHeightPx;
         if (isShowing() && sheetState != SheetState.DRAGGING) {
             animateOffsetTo(offsetForState(sheetState), (long) STATE_ANIM_DURATION_MS);
         }
+        return this;
     }
 
     public int getPeekHeight() {
         return peekHeight;
     }
 
-    public void setHalfExpandedRatio(float ratio) {
+    public MaterialBottomSheet setHalfExpandedRatio(float ratio) {
         this.halfExpandedRatio = Math.max(0f, ratio);
+        return this;
     }
 
     public float getHalfExpandedRatio() {
         return halfExpandedRatio;
     }
 
-    public void setExpandedOffset(int offsetPx) {
+    public MaterialBottomSheet setExpandedOffset(int offsetPx) {
         this.expandedOffset = Math.max(0, offsetPx);
         updatePanelHeight();
+        return this;
     }
 
     public int getExpandedOffset() {
         return expandedOffset;
     }
 
-    public void setFitToContents(boolean fitToContents) {
+    public MaterialBottomSheet setFitToContents(boolean fitToContents) {
         this.fitToContents = fitToContents;
         updatePanelHeight();
         if (fitToContents && sheetState == SheetState.HALF_EXPANDED) {
             setSheetState(SheetState.EXPANDED);
         }
+        return this;
     }
 
     public boolean isFitToContents() {
         return fitToContents;
     }
 
-    public void setOnStateChangedListener(OnStateChangedListener listener) {
+    public MaterialBottomSheet setOnStateChangedListener(OnStateChangedListener listener) {
         this.onStateChangedListener = listener;
+        return this;
     }
 
     public SheetState getSheetState() {
         return sheetState;
     }
 
-    public void setSheetState(SheetState state) {
+    public MaterialBottomSheet setSheetState(SheetState state) {
         if (state == null || state == SheetState.DRAGGING) {
-            return;
+            return this;
         }
         if (state == SheetState.HALF_EXPANDED && !isHalfExpandedAllowed()) {
-            return;
+            return this;
         }
         setSheetStateInternal(state);
         animateOffsetTo(offsetForState(state), (long) STATE_ANIM_DURATION_MS);
+        return this;
     }
 
     private void setSheetStateInternal(SheetState state) {
@@ -628,11 +648,12 @@ public class MaterialBottomSheet extends Dialog {
                 0, 0, 0, 0});
     }
 
-    public View getContent() {
+    public View getContentView() {
         return contentView;
     }
 
-    public void setContent(View view) {
+    @Override
+    public void setContentView(View view) {
         if (contentView != null) {
             sheetPanel.removeView(contentView);
         }
@@ -673,8 +694,9 @@ public class MaterialBottomSheet extends Dialog {
 
     private void settleDrag(int height, boolean allowDismiss) {
         int collapsedHeight = targetHeightFor(SheetState.COLLAPSED);
-        if (allowDismiss && hideable && height <= (int) (collapsedHeight * 0.55f)) {
-            hide();
+        if (allowDismiss && cancelable && dragToCancelEnabled && dragEnabled
+                && height <= (int) (collapsedHeight * 0.55f)) {
+            cancel();
             return;
         }
         SheetState target = nearestAnchorState(height, lastVelocityY);
@@ -736,13 +758,10 @@ public class MaterialBottomSheet extends Dialog {
         ValueAnimator animator = ValueAnimator.ofInt(startOffset, targetOffset);
         animator.setDuration(durationMs);
         animator.setInterpolator(new DecelerateInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int offset = (Integer) animation.getAnimatedValue();
-                sheetPanel.setTranslationY(offset);
-                updateCornerRadiusForOffset(offset);
-            }
+        animator.addUpdateListener(animation -> {
+            int offset = (Integer) animation.getAnimatedValue();
+            sheetPanel.setTranslationY(offset);
+            updateCornerRadiusForOffset(offset);
         });
         animator.start();
     }

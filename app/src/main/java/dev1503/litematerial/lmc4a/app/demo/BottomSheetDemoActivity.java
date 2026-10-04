@@ -41,13 +41,16 @@ public class BottomSheetDemoActivity extends DemoActivity {
 
         content.addView(caption("默认 sheet：容器色是角色色 surfaceContainerLow，遮罩走系统窗口调光"
                 + "（角色色 scrim × backgroundDimAmount），顶部圆角 28dp，面板可拖拽（isDragEnabled()=true）、"
-                + "可下滑隐藏（isHideable()=true），收起锚点用 PEEK_HEIGHT_AUTO = -1（自动，96dp~256dp 之间）。"));
+                + "可下滑关闭（isCancelable()=true 且 isDragToCancelEnabled()=true），"
+                + "收起锚点用 PEEK_HEIGHT_AUTO = -1（自动，96dp~256dp 之间）。"));
         addOpenButton(content, "打开默认 sheet", new SheetConfig() {
             @Override
             public void apply(MaterialBottomSheet sheet) {
                 toast("默认：容器 " + hex(sheet.getContainerColor()) + "(surfaceContainerLow)、圆角 "
                         + sheet.getCornerRadiusDp() + "dp、拖拽 " + sheet.isDragEnabled()
-                        + "、可隐藏 " + sheet.isHideable() + "、peek " + sheet.getPeekHeight()
+                        + "、可取消 " + sheet.isCancelable()
+                        + "、可下拉取消 " + sheet.isDragToCancelEnabled()
+                        + "、peek " + sheet.getPeekHeight()
                         + " (PEEK_HEIGHT_AUTO=" + MaterialBottomSheet.PEEK_HEIGHT_AUTO + ")");
             }
         });
@@ -139,7 +142,7 @@ public class BottomSheetDemoActivity extends DemoActivity {
         });
 
         content.addView(caption("setDragEnabled(false)：触摸拖拽不再改变面板位置，手柄点击与遮罩点击仍然可用"
-                + "（默认 true）；面板内的 hide() 按钮也照常关闭面板。isDragEnabled() 读回。"));
+                + "（默认 true）；面板内的 dismiss() 按钮也照常关闭面板。isDragEnabled() 读回。"));
         addOpenButton(content, "打开不可拖拽的 sheet", new SheetConfig() {
             @Override
             public void apply(MaterialBottomSheet sheet) {
@@ -148,14 +151,14 @@ public class BottomSheetDemoActivity extends DemoActivity {
             }
         });
 
-        content.addView(caption("setHideable(false)：下滑只回到最近锚点，同时等价于 setCancelable(false)，"
-                + "返回键与点击遮罩都不再关闭（默认 true）；clear 没有对应 API，恢复需重新 setHideable(true)。"));
-        addOpenButton(content, "打开不可隐藏的 sheet", new SheetConfig() {
+        content.addView(caption("setCancelable(false)：下拉只回到最近锚点，返回键、点击外部、遮罩点击与"
+                + "下拉关闭都不再生效（默认 true）；isCancelable() 读回。"));
+        addOpenButton(content, "打开不可取消的 sheet", new SheetConfig() {
             @Override
             public void apply(MaterialBottomSheet sheet) {
-                sheet.setHideable(false);
-                toast("setHideable(false)（= setCancelable(false)），isHideable() = " + sheet.isHideable()
-                        + "；请用面板内的 hide() 按钮关闭");
+                sheet.setCancelable(false);
+                toast("setCancelable(false)，isCancelable() = " + sheet.isCancelable()
+                        + "；请用面板内的 dismiss() 按钮关闭");
             }
         });
 
@@ -224,10 +227,10 @@ public class BottomSheetDemoActivity extends DemoActivity {
                     }
                 });
                 config.apply(sheet);
-                sheet.setContent(createSheetContent(sheet));
+                sheet.setContentView(createSheetContent(sheet));
                 sheet.show();
                 toast("show()：getSheetState() = " + sheet.getSheetState()
-                        + "，getContent() " + (sheet.getContent() != null ? "已设置" : "为空"));
+                        + "，getContentView() " + (sheet.getContentView() != null ? "已设置" : "为空"));
             }
         });
         content.addView(button, buttonParams());
@@ -247,8 +250,8 @@ public class BottomSheetDemoActivity extends DemoActivity {
         sheetContent.addView(title, titleParams);
 
         TextView body = new TextView(this);
-        body.setText("这是 Material bottom sheet。可下滑、点遮罩或按返回键（isHideable() 为 true 时）关闭，"
-                + "点手柄在锚点之间循环；hide() 关闭面板，clearXxx() 恢复角色色。");
+        body.setText("这是 Material bottom sheet。可下滑、点遮罩或按返回键（isCancelable() 为 true 时）关闭，"
+                + "点手柄在锚点之间循环；dismiss() 关闭面板，clearXxx() 恢复角色色。");
         body.setTextColor(SchemeHelper.onBackgroundColor());
         body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
@@ -259,16 +262,16 @@ public class BottomSheetDemoActivity extends DemoActivity {
         LinearLayout buttonRow = new LinearLayout(this);
         buttonRow.setOrientation(LinearLayout.HORIZONTAL);
 
-        MaterialButton hideButton = new MaterialButton(this);
-        hideButton.setText("hide()");
-        hideButton.setStyle(ButtonStyle.FILLED);
-        hideButton.setOnClickListener(new View.OnClickListener() {
+        MaterialButton dismissButton = new MaterialButton(this);
+        dismissButton.setText("dismiss()");
+        dismissButton.setStyle(ButtonStyle.FILLED);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sheet.hide();
+                sheet.dismiss();
             }
         });
-        buttonRow.addView(hideButton, sheetButtonParams());
+        buttonRow.addView(dismissButton, sheetButtonParams());
 
         MaterialButton stateButton = new MaterialButton(this);
         stateButton.setText("setSheetState(...)");
