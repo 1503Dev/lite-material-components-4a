@@ -71,7 +71,6 @@ public class MaterialBottomSheet extends Dialog {
     private boolean fullscreenMode;
     private boolean dragEnabled = true;
     private boolean dragToCancelEnabled = true;
-    private boolean hideable = true;
     private boolean cancelable = true;
     private boolean canceledOnTouchOutside = true;
     private SheetState sheetState = SheetState.COLLAPSED;

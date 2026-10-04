@@ -5,15 +5,18 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -272,18 +275,44 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         }
         container.setBackground(bg);
 
-        if (titleText != null) {
-            TextView titleView = new TextView(getContext());
-            titleView.setText(titleText);
-            titleView.setTextColor(titleColor);
-            titleView.setTextSize(24);
+        Drawable iconDrawable = icon == null ? null : icon.resolve(getContext());
+        if (titleText != null || iconDrawable != null) {
+            LinearLayout titleRow = new LinearLayout(getContext());
+            titleRow.setOrientation(LinearLayout.HORIZONTAL);
+            titleRow.setGravity(Gravity.CENTER_VERTICAL);
+
+            if (iconDrawable != null) {
+                Drawable tintedIcon = iconDrawable.mutate();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    tintedIcon.setTint(titleColor);
+                } else {
+                    tintedIcon.setColorFilter(titleColor, PorterDuff.Mode.SRC_IN);
+                }
+                ImageView iconView = new ImageView(getContext());
+                iconView.setImageDrawable(tintedIcon);
+                int iconSize = dp(Icon.DEFAULT_SIZE_DP);
+                LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
+                        iconSize, iconSize);
+                iconParams.rightMargin = dp(16);
+                titleRow.addView(iconView, iconParams);
+            }
+
+            if (titleText != null) {
+                TextView titleView = new TextView(getContext());
+                titleView.setText(titleText);
+                titleView.setTextColor(titleColor);
+                titleView.setTextSize(24);
+                titleRow.addView(titleView, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+
             LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             titleParams.leftMargin = dp(24);
             titleParams.rightMargin = dp(24);
             titleParams.topMargin = dp(24);
             titleParams.bottomMargin = dp(16);
-            container.addView(titleView, titleParams);
+            container.addView(titleRow, titleParams);
         }
 
         if (messageText != null) {
@@ -340,13 +369,6 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
 
         builder.setView(wrapper);
 
-        if (icon != null) {
-            Drawable iconDrawable = icon.resolve(getContext());
-            if (iconDrawable != null) {
-                builder.setIcon(iconDrawable.mutate());
-            }
-        }
-
         if (!cancelable) {
             builder.setCancelable(false);
         }
@@ -354,37 +376,30 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
         final AlertDialog dialog = builder.create();
 
         if (neutralBtn != null) {
-            neutralBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (neutralListener != null) neutralListener.onClick(dialog, 0);
-                    dialog.dismiss();
-                }
+            neutralBtn.setOnClickListener(v -> {
+                if (neutralListener != null) neutralListener.onClick(dialog, 0);
+                dialog.dismiss();
             });
         }
         if (negativeBtn != null) {
-            negativeBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (negativeListener != null) negativeListener.onClick(dialog, 0);
-                    dialog.dismiss();
-                }
+            negativeBtn.setOnClickListener(v -> {
+                if (negativeListener != null) negativeListener.onClick(dialog, 0);
+                dialog.dismiss();
             });
         }
         if (positiveBtn != null) {
-            positiveBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (positiveListener != null) positiveListener.onClick(dialog, 0);
-                    dialog.dismiss();
-                }
+            positiveBtn.setOnClickListener(v -> {
+                if (positiveListener != null) positiveListener.onClick(dialog, 0);
+                dialog.dismiss();
             });
         }
 
         if (dialog.getWindow() != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 dialog.getWindow().setBackgroundDrawable(new ColorDrawable(0x01000000));
-                dialog.getWindow().setElevation(dp(16));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    dialog.getWindow().setElevation(dp(16));
+                }
             } else {
                 dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             }
@@ -489,18 +504,15 @@ public class MaterialDialogBuilder extends AlertDialog.Builder {
 
         final ValueAnimator animator = ValueAnimator.ofFloat(1f, 0f);
         animator.setDuration(200);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float t = animation.getAnimatedFraction();
-                float easedT = t * t;
-                float scale = 1f - easedT * 0.2f;
-                float alpha = 1f - easedT;
+        animator.addUpdateListener(animation -> {
+            float t = animation.getAnimatedFraction();
+            float easedT = t * t;
+            float scale = 1f - easedT * 0.2f;
+            float alpha = 1f - easedT;
 
-                decorView.setScaleX(scale);
-                decorView.setScaleY(scale);
-                decorView.setAlpha(alpha);
-            }
+            decorView.setScaleX(scale);
+            decorView.setScaleY(scale);
+            decorView.setAlpha(alpha);
         });
         animator.addListener(new android.animation.AnimatorListenerAdapter() {
             @Override
